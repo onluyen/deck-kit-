@@ -1,0 +1,153 @@
+{
+  "version": 1,
+  "title": "Bài 2. Giá trị lớn nhất và nhỏ nhất của hàm số",
+  "theme": "navy-gold",
+  "transition": "fade",
+  "size": {
+    "w": 1280,
+    "h": 720
+  },
+  "foot": "",
+  "assets": {},
+  "slides": [
+    {
+      "id": "s0",
+      "kind": "goals",
+      "kicker": "HĐ 1.1",
+      "title": "Mục tiêu",
+      "bullets": [
+        "Nhận biết mối liên hệ bài toán thực tế và tìm GTLN, GTNN",
+        "Xây dựng công thức biểu diễn chi phí theo biến số",
+        "Tạo hứng thú cho bài học mới"
+      ]
+    },
+    {
+      "id": "s1",
+      "kind": "statement",
+      "kicker": "HĐ 1.1",
+      "title": "Bác Minh muốn xây bể chứa nước 9 m³ với chi phí thấp nhất",
+      "subtitle": "Đáy hình chữ nhật, chiều dài gấp đôi chiều rộng, giá thuê thợ 0,6 triệu/m²"
+    },
+    {
+      "id": "s2",
+      "kind": "formulasteps",
+      "kicker": "HĐ 1.1",
+      "title": "Công thức cơ bản",
+      "formula": "S_tp = 2h(a + b) + 2ab, V = abh",
+      "bullets": [
+        "S_tp: diện tích toàn phần hộp chữ nhật",
+        "V: thể tích hộp chữ nhật",
+        "a, b, h: chiều dài, rộng, cao"
+      ]
+    },
+    {
+      "id": "s3",
+      "kind": "arrow",
+      "kicker": "HĐ 1.1",
+      "title": "Quy trình thiết lập mô hình",
+      "bullets": [
+        "Gọi chiều rộng đáy x (m), x > 0",
+        "Chiều dài đáy 2x (m)",
+        "Tính chiều cao h từ thể tích V = 9 m³"
+      ]
+    },
+    {
+      "id": "s4",
+      "kind": "formula",
+      "kicker": "HĐ 1.1",
+      "title": "Chiều cao theo x",
+      "caption": "Từ điều kiện V = 2x · x · h = 9",
+      "formula": "h = 9/(2x²) (m)",
+      "locked": true
+    },
+    {
+      "id": "s5",
+      "kind": "steps",
+      "kicker": "HĐ 1.1",
+      "title": "Xây dựng hàm chi phí",
+      "bullets": [
+        "Bước 1: Tính S_tp = 6xh + 4x²",
+        "Bước 2: Thay h = 9/(2x²) vào",
+        "Bước 3: Rút gọn S_tp = 27/x + 4x²",
+        "Bước 4: Chi phí C(x) = 0,6(4x² + 27/x)"
+      ]
+    },
+    {
+      "id": "s6",
+      "kind": "spotlight",
+      "kicker": "HĐ 1.1",
+      "title": "Tìm chi phí nhỏ nhất",
+      "bullets": [
+        "Áp dụng bất đẳng thức Cô-si cho 3 số: 2x² + 2x² + 27/x ≥ 27",
+        "Dấu = khi x = 3/∛2 ≈ 1,5 m → C_min = 16,2 triệu đồng"
+      ]
+    },
+    {
+      "id": "s7",
+      "kind": "formula",
+      "kicker": "HĐ 1.1",
+      "title": "Công thức",
+      "formula": "C(x) = 0,6(4x² + 27/x) triệu đồng",
+      "locked": true
+    },
+    {
+      "id": "s8",
+      "kind": "formula",
+      "kicker": "HĐ 1.1",
+      "title": "Công thức",
+      "formula": "C min = 0,6 × 27 = 16,2 triệu đồng",
+      "locked": true
+    },
+    {
+      "id": "s9",
+      "kind": "note",
+      "kicker": "HĐ 1.1",
+      "title": "Lưu ý",
+      "bullets": [
+        "Dẫn vào bài mới Việc tìm chi phí nhỏ nhất trong bài toán trên chính là đi tìm giá trị nhỏ nhất của hàm số C( x ) = 0,6(4 x ² + 27/ x )",
+        "Vậy làm thế nào để tìm giá trị lớn nhất, giá trị nhỏ nhất của một hàm số?",
+        "Chúng ta sẽ cùng nhau tìm hiểu trong bài học hôm nay: Giá trị lớn nhất và giá trị nhỏ nhất của hàm số"
+      ],
+      "locked": true
+    },
+    {
+      "id": "s10",
+      "kind": "question",
+      "kicker": "HĐ 1.1",
+      "title": "Câu hỏi kiểm tra",
+      "caption": "1/2",
+      "notes": "ĐÁP ÁN\nChiều cao h = 9/x² (m) vì thể tích V = x²h = 9.",
+      "question": {
+        "index": 1,
+        "stem": "Câu 1. Nếu đáy bể là hình vuông cạnh x (m) và thể tích vẫn là 9 m³, hãy viết công thức tính chiều cao theo x .",
+        "options": []
+      },
+      "locked": true
+    },
+    {
+      "id": "s11",
+      "kind": "question",
+      "kicker": "HĐ 1.1",
+      "title": "Câu hỏi kiểm tra",
+      "caption": "2/2",
+      "notes": "ĐÁP ÁN\nVì bác Minh muốn tiết kiệm chi phí nhất có thể khi xây bể chứa nước, tức là cần tìm giá trị nhỏ nhất của chi phí.",
+      "question": {
+        "index": 2,
+        "stem": "Câu 2. Trong bài toán trên, tại sao ta cần tìm giá trị nhỏ nhất của hàm chi phí C( x )?",
+        "options": []
+      },
+      "locked": true
+    },
+    {
+      "id": "s12",
+      "kind": "remember",
+      "kicker": "HĐ 1.1",
+      "title": "Ghi nhớ",
+      "bullets": [
+        "Bài toán thực tế dẫn đến tìm GTLN, GTNN hàm số",
+        "Lập công thức hàm theo biến số là bước quan trọng",
+        "Kỹ năng này giải quyết nhiều tình huống cuộc sống"
+      ]
+    }
+  ]
+}

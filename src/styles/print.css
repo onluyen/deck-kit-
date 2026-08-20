@@ -1,0 +1,85 @@
+/* ══ IN / LƯU PDF ═══════════════════════════════════════════════════════════════════════
+   Chỉ nạp vào file HTML tự chứa (`toStandaloneHtml`) — KHÔNG nạp trong app.
+   Vì sao: panel Slide nằm lọt giữa giao diện app; in từ đó thì trình duyệt kéo theo cả
+   sidebar, thanh công cụ, menu. Bản HTML tự chứa chỉ có deck nên in ra đúng thứ GV muốn.
+
+   Trên màn hình, 46 bố cục xếp CHỒNG lên nhau: `#scaler>.slide{position:absolute;inset:0;
+   display:none}` và chỉ `.active` mới `display:block`. In thẳng ra được ĐÚNG MỘT slide.
+   Nên khối `@media print` dưới đây phải tháo cả ba thứ: chồng lớp, ẩn/hiện, và
+   `transform:scale()` mà player đặt lên `#scaler` để vừa khung trình duyệt.
+
+   KHÔNG dùng `transform:scale` để ép slide vừa khổ giấy: cùng lý do đã ghi ở `--dk-fs`
+   trong base.css — nó làm hộp bao lệch cỡ chữ. Ở đây dùng `@page{size:landscape}` + kích
+   thước thật, để trình duyệt tự thu cho vừa mép giấy. */
+@media print {
+  /* Khổ đúng bằng slide, lề 0 — slide 16:9 tự nó đã có lề trong (`--pad`), thêm lề giấy là
+     thừa và làm slide co lại giữa trang trắng.
+
+     ⚠️ KHÔNG thêm từ khoá `landscape` sau kích thước. `size: <length> <length> landscape` là
+     CSS SAI: `landscape` chỉ đi kèm khổ CÓ TÊN (A4, Letter…). Chrome bỏ nguyên khai báo rồi
+     rơi về Letter DỌC — đo được 612×792pt, slide bị cắt mất nửa. Ghi kích thước tường minh
+     là đã ngang rồi (1280>720). Đo sau khi sửa: 960×540pt = đúng 1280×720px ở 72dpi. */
+  @page { size: 1280px 720px; margin: 0; }
+
+  html, body { width: auto; height: auto; overflow: visible; background: #fff; }
+
+  /* Nền tối của khung deck (radial-gradient) tốn mực mà không mang thông tin.
+
+     `!important` ở `height`/`overflow` là BẮT BUỘC, không phải cho tiện: app chủ nhà đặt
+     kích thước khung bằng style INLINE (`<div id="deck" style="height:100vh">`) và `mountDeck`
+     tự thêm `overflow:hidden` cũng inline. Inline thắng mọi selector, nên không có
+     `!important` thì khung vẫn cao 900px trong khi các slide xếp dọc tới 6480px ⇒ bị CẮT còn
+     **đúng 1 trang**. Đã đo: 1 trang thay vì 9. */
+  .dk-root {
+    height: auto !important; overflow: visible !important;
+    background: #fff;
+    position: static;
+  }
+
+  /* Tháo lớp căn giữa + tháo scale của player. `!important` là cần thiết ở đây: `transform`
+     do JS đặt inline (`sc.style.transform`), specificity thường không thắng được. */
+  .stage { position: static; display: block; }
+  .scaler {
+    width: auto !important; height: auto !important;
+    transform: none !important;
+  }
+
+  /* MỖI SLIDE MỘT TRANG. Đây là phần chính:
+       • absolute → RELATIVE: thôi chồng lên nhau nhưng VẪN là containing block
+       • display:block cho MỌI slide, kể cả không .active
+       • break-after: mỗi slide chiếm trọn một trang giấy
+       • break-inside:avoid: cấm cắt đôi một slide qua hai trang
+
+     ⚠️ PHẢI là `relative`, KHÔNG được `static`. 37 luật trong `base.css` dùng
+     `position:absolute` (`.hd`, `.hero .msg`, `.foot`…) và neo vào `.slide` vì slide vốn
+     `absolute`. Đổi slide thành `static` là **xoá containing block** ⇒ chúng nhảy lên neo vào
+     `#scaler` ⇒ tiêu đề của CẢ 9 SLIDE chồng lên nhau ở đầu trang 1. Đã in ra giấy thấy tận
+     mắt; `relative` vừa vào được luồng thường vừa giữ nguyên mốc neo. */
+  #scaler > .slide {
+    position: relative !important;
+    display: block !important;
+    width: 1280px; height: 720px;
+    margin: 0;
+    border-radius: 0;
+    box-shadow: none;
+    break-inside: avoid; page-break-inside: avoid;
+    break-after: page;  page-break-after: always;
+    /* Bỏ hiệu ứng chuyển — animation lúc in cho ra slide mờ hoặc lệch. */
+    animation: none !important;
+  }
+  #scaler > .slide:last-child { break-after: auto; page-break-after: auto; }
+
+  /* Slide GV đã tắt (bỏ qua) thì không in ra giấy — cùng nghĩa với lúc trình chiếu. */
+  #scaler > .slide.skipped { display: none !important; }
+
+  /* Nền màu/ảnh của slide PHẢI được in. Mặc định trình duyệt bỏ nền để tiết kiệm mực, mà
+     slide tối (`.dk-dark`) mất nền thì thành chữ trắng trên giấy trắng — không đọc được gì. */
+  #scaler > .slide, #scaler > .slide * {
+    -webkit-print-color-adjust: exact;
+    print-color-adjust: exact;
+  }
+
+  /* Điều khiển chỉ có nghĩa trên màn hình. Tên lấy từ `renderStage`/`renderEditChrome`:
+     nav + thanh tiến độ, và chrome của trình sửa nếu ai đó in lúc đang bật `edit`. */
+  .nav, #sprog, .dk-toolbar, #lp-rail, #lp-picker { display: none !important; }
+}

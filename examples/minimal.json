@@ -1,0 +1,45 @@
+{
+  "version": 1,
+  "title": "Tiết 2. Tổng và hiệu hai vectơ",
+  "theme": "navy-gold",
+  "foot": "Bài 6 · Vectơ trong không gian",
+  "slides": [
+    {
+      "id": "s0",
+      "kind": "hero",
+      "title": "Tổng hai vectơ",
+      "subtitle": "Toán 11 · 45 phút"
+    },
+    {
+      "id": "s1",
+      "kind": "content",
+      "title": "Quy tắc hình hộp",
+      "bullets": [
+        "Dựng hình hộp trên ba vectơ chung gốc",
+        "Đường chéo chính là vectơ tổng",
+        "Kiểm tra lại bằng toạ độ"
+      ]
+    },
+    {
+      "id": "s2",
+      "kind": "compare",
+      "title": "Mặt phẳng và không gian",
+      "columns": [
+        {
+          "title": "Mặt phẳng",
+          "bullets": [
+            "Quy tắc hình bình hành",
+            "Hai vectơ"
+          ]
+        },
+        {
+          "title": "Không gian",
+          "bullets": [
+            "Quy tắc hình hộp",
+            "Ba vectơ"
+          ]
+        }
+      ]
+    }
+  ]
+}

@@ -1,0 +1,11 @@
+// Người dùng đặt `"moduleResolution": "node"` (node10) — kiểu cũ, RẤT nhiều dự án Angular
+// còn dùng. Resolver này BỎ QUA hoàn toàn trường `exports`, nên `@mvng267/deck-kit/angular`
+// chỉ resolve được nhờ `typesVersions` trong package.json. Bỏ `typesVersions` là cổng này đỏ.
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "ES2022", "moduleResolution": "node",
+    "strict": true, "skipLibCheck": true, "noEmit": true, "types": []
+  },
+  "angularCompilerOptions": { "strictTemplates": true },
+  "files": ["src/app.ts"]
+}

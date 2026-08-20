@@ -1,0 +1,758 @@
+{
+  "version": 1,
+  "title": "Mẫu đủ 46 bố cục",
+  "theme": "navy-gold",
+  "foot": "deck-kit · ví dụ đầy đủ",
+  "assets": {
+    "img1": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg==",
+    "img2": "data:image/png;base64,iVBORw0KGgoAAAANSUhEUgAAAAEAAAABCAYAAAAfFcSJAAAAC0lEQVR42mP8z8BQDwAEhQGAhKmMIQAAAABJRU5ErkJggg=="
+  },
+  "slides": [
+    {
+      "id": "s0",
+      "kind": "content",
+      "kicker": "Cơ bản",
+      "title": "Nội dung",
+      "subtitle": "Bố cục `content`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ],
+      "image": {
+        "asset": "img1",
+        "title": "Hình minh hoạ"
+      }
+    },
+    {
+      "id": "s1",
+      "kind": "twocol",
+      "kicker": "Cơ bản",
+      "title": "Hai cột",
+      "subtitle": "Bố cục `twocol`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s2",
+      "kind": "cards",
+      "kicker": "Cơ bản",
+      "title": "Thẻ lưới",
+      "subtitle": "Bố cục `cards`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s3",
+      "kind": "numbered",
+      "kicker": "Cơ bản",
+      "title": "Đánh số",
+      "subtitle": "Bố cục `numbered`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s4",
+      "kind": "checklist",
+      "kicker": "Cơ bản",
+      "title": "Danh sách ✓",
+      "subtitle": "Bố cục `checklist`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s5",
+      "kind": "toc",
+      "kicker": "Cơ bản",
+      "title": "Mục lục",
+      "subtitle": "Bố cục `toc`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s6",
+      "kind": "agenda",
+      "kicker": "Cơ bản",
+      "title": "Mục lục có mốc",
+      "subtitle": "Bố cục `agenda`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s7",
+      "kind": "blank",
+      "kicker": "Cơ bản",
+      "title": "Khung trắng",
+      "subtitle": "Bố cục `blank`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s8",
+      "kind": "goals",
+      "kicker": "Cơ bản",
+      "title": "Mục tiêu",
+      "subtitle": "Bố cục `goals`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s9",
+      "kind": "remember",
+      "kicker": "Cơ bản",
+      "title": "Ghi nhớ",
+      "subtitle": "Bố cục `remember`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s10",
+      "kind": "define",
+      "kicker": "Nhấn mạnh",
+      "title": "Định nghĩa",
+      "subtitle": "Bố cục `define`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s11",
+      "kind": "example",
+      "kicker": "Nhấn mạnh",
+      "title": "Ví dụ",
+      "subtitle": "Bố cục `example`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s12",
+      "kind": "defcard",
+      "kicker": "Nhấn mạnh",
+      "title": "Thẻ định nghĩa",
+      "subtitle": "Bố cục `defcard`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s13",
+      "kind": "bignum",
+      "kicker": "Số liệu",
+      "title": "Số lớn",
+      "subtitle": "Bố cục `bignum`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "title": "Cột C",
+          "bullets": [
+            "c1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s14",
+      "kind": "metrics",
+      "kicker": "Số liệu",
+      "title": "Thẻ số",
+      "subtitle": "Bố cục `metrics`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "title": "Cột C",
+          "bullets": [
+            "c1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s15",
+      "kind": "kpirow",
+      "kicker": "Số liệu",
+      "title": "Dãy chỉ số",
+      "subtitle": "Bố cục `kpirow`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "title": "Cột C",
+          "bullets": [
+            "c1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s16",
+      "kind": "three",
+      "kicker": "So sánh",
+      "title": "Ba cột",
+      "subtitle": "Bố cục `three`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "title": "Cột C",
+          "bullets": [
+            "c1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s17",
+      "kind": "compare3",
+      "kicker": "So sánh",
+      "title": "So sánh 3 cột",
+      "subtitle": "Bố cục `compare3`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "title": "Cột C",
+          "bullets": [
+            "c1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s18",
+      "kind": "compare",
+      "kicker": "So sánh",
+      "title": "So sánh",
+      "subtitle": "Bố cục `compare`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s19",
+      "kind": "proscons",
+      "kicker": "So sánh",
+      "title": "Ưu / Nhược",
+      "subtitle": "Bố cục `proscons`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s20",
+      "kind": "quadrant",
+      "kicker": "So sánh",
+      "title": "Ma trận 2×2",
+      "subtitle": "Bố cục `quadrant`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "title": "Cột C",
+          "bullets": [
+            "c1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s21",
+      "kind": "comparetable",
+      "kicker": "So sánh",
+      "title": "Bảng so sánh",
+      "subtitle": "Bố cục `comparetable`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s22",
+      "kind": "tablewide",
+      "kicker": "So sánh",
+      "title": "Bảng rộng",
+      "subtitle": "Bố cục `tablewide`",
+      "table": [
+        [
+          "Tiêu chí",
+          "Giá trị"
+        ],
+        [
+          "a",
+          "b"
+        ],
+        [
+          "c",
+          "d"
+        ]
+      ]
+    },
+    {
+      "id": "s23",
+      "kind": "feature",
+      "kicker": "So sánh",
+      "title": "Đặc điểm",
+      "subtitle": "Bố cục `feature`",
+      "columns": [
+        {
+          "title": "Cột A",
+          "bullets": [
+            "a1",
+            "a2"
+          ]
+        },
+        {
+          "title": "Cột B",
+          "bullets": [
+            "b1",
+            "b2"
+          ]
+        },
+        {
+          "title": "Cột C",
+          "bullets": [
+            "c1"
+          ]
+        }
+      ]
+    },
+    {
+      "id": "s24",
+      "kind": "steps",
+      "kicker": "Quy trình",
+      "title": "Các bước",
+      "subtitle": "Bố cục `steps`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s25",
+      "kind": "arrow",
+      "kicker": "Quy trình",
+      "title": "Mũi tên",
+      "subtitle": "Bố cục `arrow`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s26",
+      "kind": "timeline",
+      "kicker": "Quy trình",
+      "title": "Dòng thời gian",
+      "subtitle": "Bố cục `timeline`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s27",
+      "kind": "vtimeline",
+      "kicker": "Quy trình",
+      "title": "Mốc dọc",
+      "subtitle": "Bố cục `vtimeline`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s28",
+      "kind": "pyramid",
+      "kicker": "Quy trình",
+      "title": "Kim tự tháp",
+      "subtitle": "Bố cục `pyramid`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s29",
+      "kind": "funnel",
+      "kicker": "Quy trình",
+      "title": "Phễu",
+      "subtitle": "Bố cục `funnel`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s30",
+      "kind": "statement",
+      "kicker": "Nhấn mạnh",
+      "title": "Câu chốt",
+      "subtitle": "Bố cục `statement`"
+    },
+    {
+      "id": "s31",
+      "kind": "spotlight",
+      "kicker": "Nhấn mạnh",
+      "title": "Điểm nhấn",
+      "subtitle": "Bố cục `spotlight`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s32",
+      "kind": "quote",
+      "kicker": "Nhấn mạnh",
+      "title": "Trích dẫn",
+      "subtitle": "Bố cục `quote`"
+    },
+    {
+      "id": "s33",
+      "kind": "quoteauthor",
+      "kicker": "Nhấn mạnh",
+      "title": "Trích dẫn có tác giả",
+      "subtitle": "Bố cục `quoteauthor`",
+      "image": {
+        "asset": "img1",
+        "title": "Hình minh hoạ"
+      }
+    },
+    {
+      "id": "s34",
+      "kind": "hero",
+      "kicker": "Đặc biệt",
+      "title": "Bìa lớn",
+      "subtitle": "Bố cục `hero`"
+    },
+    {
+      "id": "s35",
+      "kind": "split",
+      "kicker": "Đặc biệt",
+      "title": "Chia đôi",
+      "subtitle": "Bố cục `split`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ]
+    },
+    {
+      "id": "s36",
+      "kind": "section",
+      "kicker": "Đặc biệt",
+      "title": "Mở phần",
+      "subtitle": "Bố cục `section`"
+    },
+    {
+      "id": "s37",
+      "kind": "gallery",
+      "kicker": "Đặc biệt",
+      "title": "Lưới ảnh",
+      "subtitle": "Bố cục `gallery`",
+      "images": [
+        {
+          "asset": "img1"
+        },
+        {
+          "asset": "img2"
+        }
+      ]
+    },
+    {
+      "id": "s38",
+      "kind": "imageleft",
+      "kicker": "Đặc biệt",
+      "title": "Ảnh trái",
+      "subtitle": "Bố cục `imageleft`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ],
+      "image": {
+        "asset": "img1",
+        "title": "Hình minh hoạ"
+      }
+    },
+    {
+      "id": "s39",
+      "kind": "imageright",
+      "kicker": "Đặc biệt",
+      "title": "Ảnh phải",
+      "subtitle": "Bố cục `imageright`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ],
+      "image": {
+        "asset": "img1",
+        "title": "Hình minh hoạ"
+      }
+    },
+    {
+      "id": "s40",
+      "kind": "formula",
+      "kicker": "Nguyên văn",
+      "title": "Công thức",
+      "subtitle": "Bố cục `formula`",
+      "formula": "AB + AD + AA' = AC'",
+      "locked": true
+    },
+    {
+      "id": "s41",
+      "kind": "figure",
+      "kicker": "Nguyên văn",
+      "title": "Hình",
+      "subtitle": "Bố cục `figure`",
+      "image": {
+        "asset": "img1",
+        "title": "Hình minh hoạ"
+      },
+      "locked": true
+    },
+    {
+      "id": "s42",
+      "kind": "table",
+      "kicker": "Nguyên văn",
+      "title": "Bảng",
+      "subtitle": "Bố cục `table`",
+      "table": [
+        [
+          "Tiêu chí",
+          "Giá trị"
+        ],
+        [
+          "a",
+          "b"
+        ],
+        [
+          "c",
+          "d"
+        ]
+      ],
+      "locked": true
+    },
+    {
+      "id": "s43",
+      "kind": "formulasteps",
+      "kicker": "Quy trình",
+      "title": "Công thức + các bước",
+      "subtitle": "Bố cục `formulasteps`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ],
+      "formula": "AB + AD + AA' = AC'"
+    },
+    {
+      "id": "s44",
+      "kind": "note",
+      "kicker": "Nguyên văn",
+      "title": "Lưu ý",
+      "subtitle": "Bố cục `note`",
+      "bullets": [
+        "Ý thứ nhất của slide",
+        "Ý thứ hai",
+        "Ý thứ ba",
+        "Ý thứ tư"
+      ],
+      "locked": true
+    },
+    {
+      "id": "s45",
+      "kind": "question",
+      "kicker": "Nguyên văn",
+      "title": "Câu hỏi",
+      "subtitle": "Bố cục `question`",
+      "question": {
+        "index": 1,
+        "stem": "Tổng ba vectơ chung gốc bằng vectơ nào?",
+        "options": [
+          "A. Đường chéo hình hộp",
+          "B. Cạnh bên"
+        ]
+      },
+      "notes": "ĐÁP ÁN: A",
+      "locked": true
+    }
+  ]
+}

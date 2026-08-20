@@ -1,0 +1,98 @@
+{
+  "name": "@mvng267/deck-kit",
+  "version": "0.6.0",
+  "description": "Hiển thị + chỉnh sửa slide bài giảng từ JSON — chạy được ở mọi framework (Angular, React, vanilla)",
+  "license": "UNLICENSED",
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/onluyen/deck-kit-.git"
+  },
+  "publishConfig": {
+    "registry": "https://npm.pkg.github.com"
+  },
+  "type": "module",
+  "sideEffects": [
+    "*.css"
+  ],
+  "files": [
+    "dist",
+    "README.md",
+    "docs",
+    "examples"
+  ],
+  "main": "./dist/index.cjs",
+  "module": "./dist/index.js",
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "import": {
+        "types": "./dist/index.d.ts",
+        "default": "./dist/index.js"
+      },
+      "require": {
+        "types": "./dist/index.d.cts",
+        "default": "./dist/index.cjs"
+      }
+    },
+    "./angular": {
+      "types": "./dist/angular.d.ts",
+      "import": "./dist/angular.js",
+      "default": "./dist/angular.js"
+    },
+    "./react": {
+      "import": {
+        "types": "./dist/react.d.ts",
+        "default": "./dist/react.js"
+      },
+      "require": {
+        "types": "./dist/react.d.cts",
+        "default": "./dist/react.cjs"
+      }
+    },
+    "./styles.css": "./dist/styles.css",
+    "./manifest.json": "./dist/manifest.json",
+    "./package.json": "./package.json"
+  },
+  "typesVersions": {
+    "*": {
+      "angular": [
+        "./dist/angular.d.ts"
+      ],
+      "react": [
+        "./dist/react.d.ts"
+      ]
+    }
+  },
+  "scripts": {
+    "build": "tsup && ngc -p tsconfig.angular.json && node scripts/build-angular.mjs && node scripts/emit-manifest.mjs && node scripts/emit-docs.mjs && node scripts/emit-slide-schema.mjs",
+    "dev": "tsup --watch",
+    "typecheck": "tsc --noEmit -p tsconfig.json",
+    "docs": "node scripts/emit-docs.mjs",
+    "prepublishOnly": "node scripts/check-dist.mjs",
+    "build:angular": "ngc -p tsconfig.angular.json && node scripts/build-angular.mjs"
+  },
+  "peerDependencies": {
+    "@angular/core": ">=17",
+    "react": ">=18"
+  },
+  "peerDependenciesMeta": {
+    "@angular/core": {
+      "optional": true
+    },
+    "react": {
+      "optional": true
+    }
+  },
+  "optionalDependencies": {
+    "pptxgenjs": "^4.0.1"
+  },
+  "devDependencies": {
+    "@angular/compiler": "^17.3.12",
+    "@angular/compiler-cli": "^17.3.12",
+    "@angular/core": "^17.0.0",
+    "@types/react": "^19.0.0",
+    "react": "^19.0.0",
+    "tsup": "^8.5.0",
+    "typescript": "^5"
+  }
+}

@@ -1,0 +1,35 @@
+{
+  // Biên dịch RIÊNG bản Angular bằng `ngc` (Angular compiler), KHÔNG dùng tsup/esbuild.
+  //
+  // Vì sao phải tách ra: tsup chỉ *bóc* decorator (`__decorateElement`) chứ không sinh `ɵcmp` —
+  // thứ Angular dùng để nhận ra "đây là standalone component". Angular 19 gặp class thiếu `ɵcmp`
+  // sẽ báo:
+  //     Component imports must be standalone components, directives, pipes, or must be NgModules.
+  // Người dùng copy đúng ví dụ trong README vẫn gặp lỗi — đã có người báo thật.
+  //
+  // `compilationMode: "partial"` là chuẩn cho THƯ VIỆN: sinh `ɵɵngDeclareComponent`, để app chủ
+  // dịch nốt sang Ivy đúng phiên bản Angular CỦA HỌ. Nhờ vậy một bản build chạy được với
+  // Angular 17 → 19+, không phải build riêng từng phiên bản.
+  "compilerOptions": {
+    "target": "ES2022",
+    "lib": ["ES2022", "DOM", "DOM.Iterable"],
+    "module": "ES2022",
+    "moduleResolution": "bundler",
+    "strict": true,
+    "skipLibCheck": true,
+    "esModuleInterop": true,
+    "declaration": true,
+    "emitDecoratorMetadata": false,
+    "experimentalDecorators": false,
+    "outDir": "dist/ng",
+    "types": []
+  },
+  "angularCompilerOptions": {
+    "compilationMode": "partial",
+    "strictTemplates": true
+  },
+  // `css.d.ts` phải có mặt: `ngc` đi theo chuỗi import tới `styles/index.ts` vốn `import` thẳng
+  // file `.css`. tsup nạp chúng thành CHUỖI (`loader: {".css": "text"}`), còn `ngc` không biết
+  // luật đó nên cần khai báo kiểu.
+  "files": ["src/angular/index.ts", "src/css.d.ts"]
+}

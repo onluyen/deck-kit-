@@ -1,0 +1,58 @@
+/**
+ * Token giao diện TRÌNH SỬA — theo thang ReUI/shadcn của app.
+ *
+ * Vì sao CSS thuần chứ không Tailwind: deck-kit phải chạy được ở Angular và JS thuần,
+ * kéo Tailwind/Radix vào là phá mất tính độc lập đó. Nên bắt chước THANG ĐO của ReUI
+ * (khoảng cách 4px, bán kính 6/8/10/12, cỡ control 32/36) bằng biến CSS.
+ *
+ * Chỉ áp cho phần CHROME của trình sửa (`.dk-*`). Bản thân slide vẫn dùng token `--sl-*`
+ * của theme deck — hai hệ tách bạch để đổi theme slide không kéo theo đổi giao diện sửa.
+ */
+.lp-edit {
+  /* Bán kính — thang ReUI */
+  --dk-r-sm: 6px;
+  --dk-r: 8px;
+  --dk-r-md: 10px;
+  --dk-r-lg: 12px;
+
+  /* Khoảng cách — bội số 4px */
+  --dk-1: 4px;
+  --dk-2: 8px;
+  --dk-3: 12px;
+  --dk-4: 16px;
+  --dk-6: 24px;
+
+  /* Cỡ control chuẩn: 32 (nhỏ) · 36 (mặc định) — vùng bấm không dưới 32px */
+  --dk-h-sm: 32px;
+  --dk-h: 36px;
+
+  /* Màu — nền tối cho chrome, tách hẳn với nền slide để mắt phân biệt vùng làm việc */
+  --dk-bg: #0f1117;
+  --dk-bg-2: #171a22;
+  --dk-bg-3: #1f242e;
+  --dk-fg: #e7ebf5;
+  --dk-fg-2: #9aa6c0;
+  --dk-fg-3: #6c7893;
+  --dk-border: rgba(255, 255, 255, .09);
+  --dk-border-2: rgba(255, 255, 255, .16);
+
+  /* Nhấn/cảnh báo — dùng chung với `--sl-gold` của theme để hai bên không chỏi nhau */
+  --dk-accent: var(--sl-gold, #e0a23a);
+  --dk-accent-fg: #1c274c;
+  --dk-danger: #f0736a;
+  --dk-danger-bg: #3a1d1d;
+  --dk-ok: #7fd18a;
+  --dk-warn: #e8b339;
+
+  --dk-shadow: 0 4px 14px rgba(0, 0, 0, .35);
+  --dk-shadow-lg: 0 18px 48px rgba(0, 0, 0, .5);
+  --dk-ring: 0 0 0 3px rgba(224, 162, 58, .28);
+
+  --dk-font: var(--sl-font, system-ui, -apple-system, "Segoe UI", sans-serif);
+}
+
+/* Icon SVG nhúng — ăn theo cỡ chữ và màu chữ của nút chứa nó. */
+.dk-i {
+  flex: none;
+  vertical-align: -.15em;
+}

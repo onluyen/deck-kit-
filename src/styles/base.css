@@ -1,0 +1,503 @@
+/* ══ PHẠM VI — deck-kit dùng CHUNG document với app, nên KHÔNG được khai selector trần ═══
+   Đã đo trong trình duyệt thật: bản cũ giết scroll toàn trang app, đổi màu mọi <b> của app,
+   và ghi nền tối lên <body>. Nguyên nhân: `html,body{}` + `*{}` là selector TRẦN.
+   `@layer` KHÔNG cứu được — layer khai sau luôn thắng, mà layer của deck-kit sinh lúc mount
+   nên luôn đứng cuối. Chỉ có PHẠM VI mới chặn được.
+   `.dk-root` là khung deck (mount.ts tự gắn). Trang deck ĐỘC LẬP tự khai html,body riêng
+   (deck_shell.py) nên không mất gì. */
+.dk-root,.dk-root *{margin:0;padding:0;box-sizing:border-box}
+.dk-root{position:relative;height:100%;overflow:hidden;font-family:var(--sl-font);
+ background:radial-gradient(1100px 650px at 50% 26%,#2b303c,#12141b 80%);
+ /* Hệ số cỡ chữ toàn deck — GV chỉnh ở menu Hiển thị. 1 = như thiết kế gốc.
+    Nhân vào TỪNG khai báo `font-size` chứ KHÔNG dùng `transform:scale`/`zoom`:
+    `deck_to_pptx` đọc `getBoundingClientRect()` để đặt textbox và `getComputedStyle().fontSize`
+    để lấy cỡ chữ — transform làm hai thứ đó lệch nhau ⇒ .pptx đặt chữ sai chỗ.
+    Nhân thẳng thì .pptx tự khớp, không phải sửa một dòng Python nào. */
+ --dk-fs:1}
+.stage{position:absolute;inset:0;display:flex;align-items:center;justify-content:center}
+/* flex:none — KHÔNG cho flex co khung 1280×720 khi panel hẹp (bug méo slide thành gần vuông);
+   fit() sẽ scale đồng đều nên slide luôn giữ 16:9. */
+.scaler{position:relative;transform-origin:center center;flex:none}
+#scaler>.slide{position:absolute;inset:0;display:none;overflow:hidden;border-radius:14px;
+ box-shadow:0 30px 80px rgba(0,0,0,.55),0 3px 12px rgba(0,0,0,.4);
+ background:var(--sl-bg);color:var(--sl-ink);font-family:var(--sl-font)}
+#scaler>.slide.active{display:block;animation:sf .32s ease}
+@keyframes sf{from{opacity:0;transform:scale(.99)}to{opacity:1;transform:none}}
+/* Hiệu ứng chuyển slide (data-tr trên #scaler) — fade là mặc định (sf) */
+#scaler[data-tr="none"]>.slide.active{animation:none}
+#scaler[data-tr="slide"]>.slide.active{animation:trSlide .38s cubic-bezier(.22,.61,.36,1)}
+@keyframes trSlide{from{opacity:0;transform:translateX(48px)}to{opacity:1;transform:none}}
+#scaler[data-tr="slideup"]>.slide.active{animation:trUp .38s cubic-bezier(.22,.61,.36,1)}
+@keyframes trUp{from{opacity:0;transform:translateY(44px)}to{opacity:1;transform:none}}
+#scaler[data-tr="zoom"]>.slide.active{animation:trZoom .34s ease}
+@keyframes trZoom{from{opacity:0;transform:scale(.9)}to{opacity:1;transform:none}}
+#scaler[data-tr="flip"]>.slide.active{animation:trFlip .5s ease}
+@keyframes trFlip{from{opacity:0;transform:perspective(1200px) rotateY(30deg)}to{opacity:1;transform:none}}
+
+/* ══ THANG THIẾT KẾ cho SLIDE ═══════════════════════════════════════════════
+   Trước đây 9 giá trị box-shadow một-lần và 8 bán kính, gán ngẫu nhiên: hai thẻ cạnh nhau
+   trong cùng một deck có độ nổi khác nhau mà không vì lý do gì — nhìn ra ngay là cẩu thả dù
+   không giá trị nào sai.
+
+   CỐ Ý tách khỏi `--dk-*` trong `tokens.css` (thang của khung TRÌNH SỬA): gộp hai hệ lại là
+   buộc giao diện slide phải đổi theo giao diện trình sửa. */
+/* `--pad` lấy từ `.dk-root` nếu có (menu Hiển thị đặt), không thì 64px gốc.
+   KHÔNG khai thẳng `--pad:64px` ở đây: biến khai trên phần tử con luôn thắng biến kế thừa,
+   nên mật độ chọn ở khung deck sẽ vô tác dụng — đúng cái bẫy đã dính ở `.spl-r`. */
+.slide{--pad:var(--dk-pad,64px);
+ --sl-sh-sm:0 8px 24px rgba(20,30,70,.07);      /* thẻ nhỏ, danh sách */
+ --sl-sh-md:0 12px 34px rgba(20,30,70,.10);     /* thẻ nội dung chính */
+ --sl-sh-lg:0 16px 44px rgba(20,30,70,.10);     /* khối nhấn, thẻ số */
+ --sl-r-sm:14px; --sl-r-md:18px; --sl-r-lg:22px}
+.slide.chrome::before{content:"";position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--sl-rail)}
+.slide.dots::after{content:"";position:absolute;right:56px;bottom:52px;width:150px;height:118px;
+ background-image:radial-gradient(circle,var(--sl-dot) 2px,transparent 2px);background-size:20px 20px;opacity:.7}
+
+.hd{position:absolute;left:var(--pad);top:44px;right:var(--pad)}
+.kick{font-size:calc(15px * var(--dk-fs,1));font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sl-gold)}
+/* `--sl-font-display` chỉ có ở theme "tạp chí"/"cổ điển"; theme khác không khai thì
+   `var(…, var(--sl-font))` tự về font thân — không cần khai lại ở 10 theme còn lại.
+   CHỈ áp cho TIÊU ĐỀ: chữ thân giữ sans để đọc rõ trên máy chiếu. */
+.ttl{font-family:var(--sl-font-display,var(--sl-font));
+ font-size:calc(var(--ttl-size,38px) * var(--dk-fs,1));font-weight:800;color:var(--sl-navy);line-height:1.08;margin-top:6px;letter-spacing:-.01em;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+/* Tiêu đề dài phải được CHỪA CHỖ, không thì nó đè lên nội dung (lỗi thấy rõ ở table/question/cards).
+   Bậc tính theo số ký tự — cả renderer Python lẫn TS đều suy ra được, không cần đo bằng JS. */
+.slide[data-tt="2"]{--ttl-size:33px;--rule-y:158px}
+.slide[data-tt="3"]{--ttl-size:28px;--rule-y:190px}
+.rule{position:absolute;left:var(--pad);top:var(--rule-y,120px);height:2px;width:calc(100% - 2*var(--pad));background:var(--sl-border)}
+.rule::before{content:"";position:absolute;left:0;top:-1px;width:96px;height:4px;background:var(--sl-gold)}
+.pgno{position:absolute;right:var(--pad);bottom:30px;font-size:calc(13px * var(--dk-fs,1));color:var(--sl-muted);font-variant-numeric:tabular-nums}
+.foot{position:absolute;left:var(--pad);bottom:30px;font-size:calc(12px * var(--dk-fs,1));color:var(--sl-muted);max-width:70%;
+ white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+
+/* `overflow:hidden` là CHỐT CHẶN cuối: nội dung quá dài thì bị cắt gọn trong khung slide,
+   KHÔNG được tràn đè lên chân trang/số trang hay lòi ra ngoài mép (lỗi này ảnh chụp so-pixel
+   không bắt được vì cả hai renderer cùng tràn giống nhau). Các bậc `--bul-size`/`--tt` bên
+   dưới lo phần thu nhỏ cho vừa; đây chỉ chặn trường hợp thu hết cỡ vẫn dài. */
+.body{position:absolute;left:var(--pad);top:calc(var(--rule-y,120px) + 32px);right:var(--pad);bottom:80px;
+ overflow:hidden}
+ul.bul{list-style:none}
+ul.bul li{position:relative;padding-left:30px;font-size:calc(var(--bul-size,26px) * var(--dk-fs,1));line-height:1.4;color:var(--sl-ink);margin:var(--bul-gap,14px) 0}
+ul.bul li::before{content:"";position:absolute;left:2px;top:.62em;width:9px;height:9px;border-radius:50%;background:var(--sl-blue)}
+/* Nhiều ý thì thu nhỏ dần cho vừa khung — trước đây ý thứ 7–8 tràn xuống đè chân trang.
+   `data-nb` đã có sẵn trên mỗi <section> nên không phải đổi renderer. */
+.slide[data-nb="6"]{--bul-size:23px;--bul-gap:11px}
+.slide[data-nb="7"]{--bul-size:21px;--bul-gap:9px}
+.slide[data-nb="8"]{--bul-size:20px;--bul-gap:8px}
+.slide[data-nb="9"],.slide[data-nb="10"],.slide[data-nb="11"],.slide[data-nb="12"]{--bul-size:19px;--bul-gap:6px}
+/* split có nửa slide bên phải rộng rãi hơn nên chữ to hơn mặc định — nhưng CHỈ khi ít ý;
+   từ 6 ý trở lên nó theo thang chung ở trên để không tràn. */
+.split{--bul-size:22px}
+.slide[data-nb="6"] .split,.slide[data-nb="7"] .split,.slide[data-nb="8"] .split,
+.slide[data-nb="9"] .split,.slide[data-nb="10"] .split,
+.slide[data-nb="11"] .split,.slide[data-nb="12"] .split{--bul-size:inherit}
+.slide b,.slide strong{color:var(--sl-navy);font-weight:800}
+
+/* table: bảng dữ liệu nguyên văn từ giáo án. Trước đây KHÔNG có CSS nào → bảng co dúm ở góc. */
+.dtbl{width:100%;border-collapse:collapse;font-size:calc(20px * var(--dk-fs,1));table-layout:fixed}
+.dtbl th,.dtbl td{border:1px solid var(--sl-border);padding:12px 16px;text-align:left;color:var(--sl-ink);
+ vertical-align:top;overflow-wrap:anywhere}
+.dtbl th{background:var(--sl-navy);color:#fff;font-weight:800;font-size:calc(21px * var(--dk-fs,1))}
+.dtbl tr:nth-child(even) td{background:var(--sl-bg2)}
+
+/* content 2 cột (chữ + ảnh) */
+.two{display:grid;grid-template-columns:1fr 460px;gap:40px;height:100%}
+.two .fig{align-self:center;background:var(--sl-card);border:1px solid var(--sl-border);border-radius:18px;
+ padding:16px;box-shadow:var(--sl-sh-md)}
+.two .fig img{width:100%;height:auto;display:block;border-radius:10px}
+.fcap{margin-top:10px;font-size:calc(15px * var(--dk-fs,1));color:var(--sl-muted);text-align:center;font-style:italic}
+
+/* cards: lưới thẻ số lớn */
+.grid{display:grid;gap:26px 30px;height:100%}
+.card-n{font-size:calc(46px * var(--dk-fs,1));font-weight:800;color:var(--sl-blue-pale);line-height:1}
+.card-n+.bar{width:96px;height:4px;background:var(--sl-gold);margin:10px 0 12px}
+.card-t{font-size:calc(22px * var(--dk-fs,1));line-height:1.32;color:var(--sl-ink)}
+
+/* three: 3 thẻ */
+.cols{display:grid;gap:24px;height:100%}
+.col{background:var(--sl-card);border:1px solid var(--sl-border);border-radius:18px;padding:26px 24px;
+ box-shadow:var(--sl-sh-md);position:relative;overflow:hidden}
+.col .top{position:absolute;left:0;top:0;right:0;height:8px}
+.col .cn{font-size:calc(30px * var(--dk-fs,1));font-weight:800;margin-top:8px}
+.col .ch{font-size:calc(22px * var(--dk-fs,1));font-weight:800;color:var(--sl-navy);margin:8px 0 14px}
+.col ul.bul li{font-size:calc(21px * var(--dk-fs,1));margin:11px 0}
+
+/* metrics: thẻ số */
+.mrow{display:grid;gap:24px;align-items:stretch;height:100%;padding:20px 0}
+.metric{background:var(--sl-card);border:1px solid var(--sl-border);border-radius:20px;padding:30px 20px;
+ text-align:center;box-shadow:var(--sl-sh-lg);position:relative;overflow:hidden;
+ display:flex;flex-direction:column;justify-content:center}
+.metric .top{position:absolute;left:0;top:0;right:0;height:8px;background:var(--sl-gold)}
+.metric .val{font-size:calc(58px * var(--dk-fs,1));font-weight:800;color:var(--sl-navy);line-height:1.05}
+.metric .lab{font-size:calc(19px * var(--dk-fs,1));color:var(--sl-muted);margin-top:14px;line-height:1.3}
+
+/* timeline ngang */
+.tl{position:relative;height:100%;display:flex;align-items:center}
+.tl .line{position:absolute;left:0;right:0;top:50%;height:3px;background:var(--sl-border)}
+.tl .node{position:relative;flex:1;display:flex;flex-direction:column;align-items:center;text-align:center}
+.tl .dot{width:56px;height:56px;border-radius:50%;background:var(--sl-navy);color:#fff;display:flex;
+ align-items:center;justify-content:center;font-size:calc(22px * var(--dk-fs,1));font-weight:800;z-index:2;box-shadow:0 8px 20px rgba(20,30,70,.25)}
+.tl .lab{position:absolute;width:88%;font-size:calc(18px * var(--dk-fs,1));line-height:1.3;color:var(--sl-ink)}
+.tl .above .lab{bottom:64px}.tl .below .lab{top:64px}
+
+/* toc: danh sách đánh số */
+.toc{display:flex;flex-direction:column;gap:16px;height:100%;justify-content:center}
+.toc .it{display:flex;align-items:center;gap:22px;background:var(--sl-card);border:1px solid var(--sl-border);
+ border-radius:14px;padding:16px 22px;box-shadow:var(--sl-sh-sm);position:relative}
+.toc .it::before{content:"";position:absolute;left:0;top:0;bottom:0;width:6px;background:var(--sl-gold);border-radius:14px 0 0 14px}
+.toc .n{font-size:calc(30px * var(--dk-fs,1));font-weight:800;color:var(--sl-blue-pale);min-width:52px}
+.toc .t{font-size:calc(24px * var(--dk-fs,1));font-weight:700;color:var(--sl-ink)}
+
+/* steps: quy trình dọc (số + việc) */
+.steps{display:flex;flex-direction:column;gap:16px;height:100%;justify-content:center}
+.stp{display:flex;align-items:center;gap:22px;background:var(--sl-card);border:1px solid var(--sl-border);
+ border-radius:14px;padding:15px 24px;box-shadow:var(--sl-sh-sm)}
+.stp .sn{flex:none;width:46px;height:46px;border-radius:50%;background:var(--sl-gold);color:var(--sl-navy2);
+ font-weight:800;font-size:calc(22px * var(--dk-fs,1));display:flex;align-items:center;justify-content:center}
+.stp .st{font-size:calc(23px * var(--dk-fs,1));font-weight:600;color:var(--sl-ink);line-height:1.3}
+
+/* bignum: 1–3 con số hero */
+.bnrow{display:grid;gap:30px;height:100%;align-items:center}
+.bn{text-align:center;background:var(--sl-card);border:1px solid var(--sl-border);border-radius:22px;
+ padding:36px 22px;box-shadow:var(--sl-sh-lg)}
+.bnv{font-size:calc(98px * var(--dk-fs,1));font-weight:900;line-height:1;letter-spacing:-.02em}
+.bnl{margin-top:14px;font-size:calc(23px * var(--dk-fs,1));font-weight:600;color:var(--sl-muted);line-height:1.3}
+
+/* pyramid / funnel: tầng bậc màu */
+.pyramid,.funnel{display:flex;flex-direction:column;align-items:center;justify-content:center;gap:12px;height:100%}
+.pyr,.fnl{color:#fff;font-weight:700;font-size:calc(22px * var(--dk-fs,1));line-height:1.25;text-align:center;padding:16px 26px;
+ border-radius:14px;box-shadow:var(--sl-sh-md);display:flex;align-items:center;justify-content:center;
+ max-width:100%;overflow:hidden}
+
+/* checklist: ✓ trong vòng tròn */
+.cklist{display:flex;flex-direction:column;gap:14px;height:100%;justify-content:center}
+.ck{display:flex;align-items:center;gap:18px}
+.ckm{flex:none;width:38px;height:38px;border-radius:50%;background:var(--sl-green);color:#fff;font-weight:800;font-size:calc(20px * var(--dk-fs,1));display:flex;align-items:center;justify-content:center}
+.ckt{font-size:calc(23px * var(--dk-fs,1));font-weight:600;color:var(--sl-ink);line-height:1.3}
+
+/* quadrant: ma trận 2×2 */
+.quad{display:grid;grid-template-columns:1fr 1fr;gap:20px;height:100%}
+.qd{background:var(--sl-card);border:1px solid var(--sl-border);border-radius:16px;padding:20px 24px;box-shadow:var(--sl-sh-sm);overflow:auto}
+.qdt{font-size:calc(22px * var(--dk-fs,1));font-weight:800;margin-bottom:8px}
+.qd ul.bul li{font-size:calc(18px * var(--dk-fs,1));margin:5px 0}
+
+/* arrow: mũi tên ngang (chevron) */
+.arrow{display:flex;gap:5px;align-items:stretch;height:100%;padding:44px 0}
+.arw{flex:1;color:#fff;padding:20px 24px 20px 46px;display:flex;flex-direction:column;justify-content:center;overflow:hidden;
+ clip-path:polygon(0 0,calc(100% - 26px) 0,100% 50%,calc(100% - 26px) 100%,0 100%,26px 50%)}
+.arw.first{clip-path:polygon(0 0,calc(100% - 26px) 0,100% 50%,calc(100% - 26px) 100%,0 100%);border-radius:12px 0 0 12px;padding-left:28px}
+.arwn{font-size:calc(13px * var(--dk-fs,1));font-weight:800;letter-spacing:.05em;opacity:.9}
+.arwt{font-size:calc(19px * var(--dk-fs,1));font-weight:700;margin-top:6px;line-height:1.25}
+
+/* cover: bìa sáng, tiêu đề rất lớn */
+/* `display:flex` CHỈ khi slide đang hiện. Trước đây khai trần `#scaler>.slide.cover{display:flex}`
+   — cùng specificity với `.slide.active{display:block}` nhưng đứng SAU nên thắng, khiến slide
+   `cover` KHÔNG ở vị trí đầu luôn hiện đè lên slide đang xem. Chưa GV nào gặp (0/71 deck thật
+   có cover ở giữa) nhưng đổi bố cục một slide thành "Bìa" là dựng ra ngay. */
+#scaler>.slide.cover{align-items:center;background:var(--sl-bg2);padding:0 var(--pad)}
+#scaler>.slide.cover.active,.slide.cover{display:flex;align-items:center;background:var(--sl-bg2);padding:0 var(--pad)}
+.cover-in{max-width:960px}
+.cover .hbar{width:74px;height:6px;background:var(--sl-gold);border-radius:3px;margin-bottom:22px}
+.cover .hk{font-size:calc(18px * var(--dk-fs,1));font-weight:800;letter-spacing:.09em;text-transform:uppercase;color:var(--sl-blue)}
+.cover .hbig{font-size:calc(72px * var(--dk-fs,1));line-height:1.05;font-weight:900;color:var(--sl-ink);margin-top:12px;letter-spacing:-.02em}
+.cover .hsub{font-size:calc(26px * var(--dk-fs,1));color:var(--sl-muted);margin-top:22px;line-height:1.35;max-width:760px}
+
+/* gallery: lưới ảnh */
+.gal{display:grid;gap:16px;height:100%}
+.gcell{position:relative;border-radius:14px;overflow:hidden;background:var(--sl-muted);border:1px solid var(--sl-border);box-shadow:var(--sl-sh-sm)}
+.gcell img{width:100%;height:100%;object-fit:cover;display:block}
+.gcap{position:absolute;left:0;right:0;bottom:0;background:linear-gradient(transparent,rgba(0,0,0,.6));color:#fff;font-size:calc(14px * var(--dk-fs,1));font-weight:600;padding:14px 12px 8px}
+
+/* numbered: đánh số lớn */
+.nlist{display:flex;flex-direction:column;gap:16px;height:100%;justify-content:center}
+.nrow{display:flex;align-items:center;gap:24px}
+.nbig{font-size:calc(52px * var(--dk-fs,1));font-weight:900;color:var(--sl-gold);min-width:82px;line-height:1;letter-spacing:-.02em}
+.ntxt{font-size:calc(24px * var(--dk-fs,1));font-weight:600;color:var(--sl-ink);line-height:1.3}
+
+/* split: panel màu trái + nội dung phải (full-bleed) */
+.slide.split{padding:0}
+.split{display:flex;height:100%;width:100%}
+.spl-l{width:42%;background:linear-gradient(155deg,var(--sl-navy),var(--sl-navy2));color:#fff;padding:var(--pad);display:flex;flex-direction:column;justify-content:center}
+.spl-t{font-family:var(--sl-font-display,var(--sl-font));font-size:calc(46px * var(--dk-fs,1));font-weight:900;line-height:1.08}
+.spl-sub{font-size:calc(20px * var(--dk-fs,1));opacity:.85;margin-top:18px;line-height:1.4}
+/* `.spl-r` KHÔNG được khai `--bul-size` (dù ở khung hay ở `li`): biến khai trên phần tử con
+   luôn thắng biến kế thừa từ `.slide[data-nb=…]`, nên thang thu nhỏ theo số ý sẽ vô tác dụng
+   và split 8-10 ý tràn ra ngoài. `.spl-r` lại nằm NGOÀI `.body` nên cũng không có chốt
+   `overflow:hidden` của `.body` — phải tự khai.
+   Cỡ mặc định 22px của split đặt ở thang `data-nb` phía dưới (bậc "ít ý"). */
+.spl-r{flex:1;padding:var(--pad);display:flex;flex-direction:column;justify-content:center;
+ min-height:0;overflow:hidden}
+
+/* feature: thẻ tính năng lớn (vòng số) */
+.feat{display:grid;gap:22px;height:100%;align-items:center}
+.ft{background:var(--sl-card);border:1px solid var(--sl-border);border-radius:18px;padding:28px 24px;box-shadow:var(--sl-sh-sm);text-align:center}
+.ft-ic{width:56px;height:56px;border-radius:16px;color:#fff;font-size:calc(26px * var(--dk-fs,1));font-weight:800;display:flex;align-items:center;justify-content:center;margin:0 auto 16px}
+.ft-t{font-size:calc(22px * var(--dk-fs,1));font-weight:800;color:var(--sl-navy)}
+.ft-l{font-size:calc(16px * var(--dk-fs,1));color:var(--sl-muted);margin-top:8px;line-height:1.4}
+
+/* proscons: ưu (xanh) / nhược (đỏ) */
+.pcwrap{display:grid;grid-template-columns:1fr 1fr;gap:24px;height:100%}
+/* `overflow:hidden` chứ KHÔNG `auto`: slide đem đi chiếu/chụp ảnh không có thanh cuộn,
+   `auto` chỉ khiến chữ thừa tràn ra ngoài thẻ. Anh em `.qd` đã sửa, `.pc` bị bỏ sót. */
+.pc{background:var(--sl-card);border:1px solid var(--sl-border);border-radius:16px;padding:20px 24px;box-shadow:var(--sl-sh-sm);overflow:hidden;min-height:0;display:flex;flex-direction:column}
+.pc ul.bul{min-height:0;overflow:hidden}
+.pc-h{display:flex;align-items:center;gap:11px;font-size:calc(22px * var(--dk-fs,1));font-weight:800;margin-bottom:12px}
+.pc-m{flex:none;width:30px;height:30px;border-radius:50%;color:#fff;display:flex;align-items:center;justify-content:center;font-size:calc(16px * var(--dk-fs,1))}
+.pc ul.bul li{font-size:calc(19px * var(--dk-fs,1));margin:6px 0}
+
+/* spotlight: hộp nhấn có biểu tượng */
+/* KHAI BÁO DUY NHẤT — trước đây khai 2 chỗ với trục ngược nhau (`row` ở đây,
+   `column` ở khối chống tràn) nên bố cục "biểu tượng bên trái chữ" chưa bao giờ chạy.
+   Giữ `column` vì đó là bản đang hiển thị và mọi ảnh mốc test lấy theo nó. */
+.spot{display:flex;flex-direction:column;align-items:center;gap:28px;background:var(--sl-amber-bg);border:2px solid var(--sl-amber-bd);border-radius:20px;padding:32px 44px;height:100%;min-height:0;overflow:hidden;box-shadow:var(--sl-sh-lg)}
+.spot-ic{font-size:calc(60px * var(--dk-fs,1));flex:none}
+.spot-body{flex:1}
+.spot-body ul.bul li{font-size:calc(26px * var(--dk-fs,1));font-weight:600;color:var(--sl-ink);margin:8px 0;line-height:1.35}
+
+/* vtimeline: mốc thời gian dọc */
+.vtl{position:relative;padding-left:44px;height:100%;display:flex;flex-direction:column;justify-content:center;gap:18px}
+.vtl::before{content:"";position:absolute;left:18px;top:14px;bottom:14px;width:2px;background:var(--sl-border)}
+.vt-item{display:flex;align-items:center;gap:18px;position:relative}
+.vt-dot{position:absolute;left:-44px;width:37px;height:37px;border-radius:50%;background:var(--sl-gold);color:var(--sl-navy2);font-weight:800;font-size:calc(18px * var(--dk-fs,1));display:flex;align-items:center;justify-content:center;flex:none}
+.vt-txt{font-size:calc(23px * var(--dk-fs,1));font-weight:600;color:var(--sl-ink);line-height:1.3}
+
+/* twocol: 2 cột nội dung */
+.body.twocol .bul{column-count:2;column-gap:48px}
+.body.twocol .bul li{break-inside:avoid}
+
+/* comparetable: bảng so sánh kẻ ô */
+.cmptbl{width:100%;border-collapse:collapse;font-size:calc(20px * var(--dk-fs,1))}
+.cmptbl th,.cmptbl td{border:1px solid var(--sl-border);padding:13px 18px;text-align:left;color:var(--sl-ink)}
+.cmptbl th{background:var(--sl-navy);color:#fff;font-weight:800;font-size:calc(21px * var(--dk-fs,1))}
+.cmptbl tr:nth-child(even) td{background:var(--sl-bg2)}
+
+/* define/example/remember: card viền accent */
+/* `top` phải bám `--rule-y` chứ không đóng cứng 152px: tiêu đề 3 dòng đẩy `--rule-y` lên
+   190px, thẻ đứng yên ở 152px sẽ ĐÈ lên tiêu đề và đường kẻ. Công thức này ra đúng 152px ở
+   tiêu đề 1 dòng nên slide thường không đổi một pixel nào. */
+.acard{position:absolute;left:var(--pad);top:calc(var(--rule-y,120px) + 32px);right:var(--pad);bottom:64px;background:var(--sl-card);
+ border-radius:18px;border:1px solid var(--sl-border);padding:34px 40px;box-shadow:var(--sl-sh-lg);overflow:auto}
+.acard.lft{border-left:8px solid var(--sl-accent)}
+
+/* formula */
+.fbox{position:absolute;left:120px;right:120px;top:calc(var(--rule-y,120px) + 120px);min-height:190px;background:var(--sl-card);
+ border:1.5px dashed var(--sl-blue-border);border-radius:18px;display:flex;align-items:center;justify-content:center;padding:24px}
+.fbox img{max-width:88%;max-height:150px}
+.fbox .ftx{font-size:calc(38px * var(--dk-fs,1));font-weight:800;color:var(--sl-navy);text-align:center;line-height:1.25}
+.fcp2{position:absolute;left:120px;right:120px;top:calc(var(--rule-y,120px) + 350px);text-align:center;color:var(--sl-muted);font-size:calc(16px * var(--dk-fs,1))}
+/* Công thức CHƯA render được thành ảnh: hiện chữ đã dọn, cỡ nhỏ hơn + báo cho GV biết
+   để bấm dàn lại. Không đánh dấu thì GV tưởng công thức vốn xấu như vậy. */
+.fbox .ftx.ftx-tex{font-size:calc(26px * var(--dk-fs,1));font-weight:700;overflow-wrap:anywhere;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:4;overflow:hidden}
+.fbox .ftx.ftx-tex::after{content:"công thức chưa dựng được ảnh — bấm Dàn lại slide";
+ display:block;margin-top:14px;font-size:calc(13px * var(--dk-fs,1));font-weight:600;color:var(--sl-muted)}
+
+/* figure lớn */
+.bigfig{position:absolute;left:var(--pad);top:calc(var(--rule-y,120px) + 32px);right:var(--pad);bottom:74px;display:flex;
+ align-items:center;justify-content:center;background:var(--sl-card);border-radius:18px;border:1px solid var(--sl-border);overflow:hidden;box-shadow:var(--sl-sh-md)}
+.bigfig img{max-width:100%;max-height:100%;object-fit:contain}
+
+/* full-bleed: statement / quote / section */
+#scaler>.slide.hero,.slide.hero{background:var(--sl-bg2)}
+.hero .k{position:absolute;left:96px;top:150px;font-size:calc(15px * var(--dk-fs,1));font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sl-gold)}
+.hero .k::after{content:"";display:block;width:120px;height:4px;background:var(--sl-gold);margin-top:12px}
+.hero .msg{position:absolute;left:96px;right:120px;top:210px;font-size:calc(48px * var(--dk-fs,1));font-weight:800;color:var(--sl-navy);line-height:1.14;letter-spacing:-.01em}
+.hero .sub{position:absolute;left:96px;right:140px;top:520px;font-size:calc(20px * var(--dk-fs,1));color:var(--sl-muted);line-height:1.35}
+
+/* Phải bám `#scaler>` — luật nền chung `#scaler>.slide` có ĐỘ ƯU TIÊN cao hơn (id+class)
+   nên `.slide.dark` đơn thuần bị đè, slide tối hoá ra nền TRẮNG và chữ trắng biến mất. */
+#scaler>.slide.dk-dark,.slide.dk-dark{background:linear-gradient(135deg,var(--sl-navy),var(--sl-navy2))}
+.dk-dark .rail{position:absolute;left:0;top:0;bottom:0;width:8px;background:var(--sl-gold)}
+.qmark{position:absolute;left:88px;top:104px;font-size:calc(150px * var(--dk-fs,1));font-weight:800;color:var(--sl-gold);line-height:.7;font-family:Georgia,serif}
+.qmsg{position:absolute;left:100px;right:120px;top:250px;font-size:calc(42px * var(--dk-fs,1));font-weight:800;color:#fff;line-height:1.24}
+.qby{position:absolute;left:100px;top:560px;font-size:calc(19px * var(--dk-fs,1));color:var(--sl-blue-border)}
+.sec-tag{position:absolute;left:110px;top:250px;font-size:calc(16px * var(--dk-fs,1));font-weight:800;letter-spacing:.14em;text-transform:uppercase;color:var(--sl-gold)}
+.sec-ttl{position:absolute;left:110px;right:120px;top:290px;font-size:calc(52px * var(--dk-fs,1));font-weight:800;color:#fff;line-height:1.12}
+.sec-sub{position:absolute;left:110px;right:140px;top:460px;font-size:calc(20px * var(--dk-fs,1));color:var(--sl-blue-border);line-height:1.4}
+
+/* nav pill + progress (như player pptx) */
+/* `absolute` chứ KHÔNG `fixed`: fixed neo vào viewport ⇒ nav thoát khỏi panel, nổi đè UI
+   app. `mount.ts` đã đặt host `position:relative` nên absolute neo đúng khung deck. */
+.nav{position:absolute;bottom:16px;left:50%;transform:translateX(-50%);display:flex;align-items:center;gap:12px;
+ background:rgba(18,20,27,.72);backdrop-filter:blur(10px);border:1px solid rgba(255,255,255,.08);color:#fff;
+ padding:8px 14px;border-radius:999px;font-size:calc(14px * var(--dk-fs,1));z-index:20;box-shadow:0 8px 30px rgba(0,0,0,.45)}
+.nav button{background:rgba(255,255,255,.12);border:0;color:#fff;width:34px;height:34px;border-radius:50%;cursor:pointer;font-size:calc(17px * var(--dk-fs,1))}
+.nav button:hover{background:rgba(255,255,255,.28)}
+.nav .counter{min-width:70px;text-align:center;font-variant-numeric:tabular-nums}
+#sprog{position:absolute;left:0;bottom:0;height:3px;width:0;z-index:21;background:linear-gradient(90deg,var(--sl-blue),var(--sl-gold));transition:width .25s}
+
+/* ══ Bố cục bổ sung (đợt 2) — không có ở renderer Python ══════════════════ */
+
+/* Dãy chỉ số: số to, vạch màu, nhãn dưới */
+.kpirow{display:grid;gap:26px;align-items:stretch;height:100%;padding:24px 0}
+.kpi{display:flex;flex-direction:column;align-items:center;justify-content:center;text-align:center;
+ background:var(--sl-card);border:1px solid var(--sl-border);border-radius:20px;padding:26px 18px;box-shadow:var(--sl-sh-sm)}
+.kpi-v{font-size:calc(64px * var(--dk-fs,1));font-weight:800;color:var(--sl-accent);line-height:1;overflow-wrap:anywhere}
+.kpi-bar{width:52px;height:5px;border-radius:3px;background:var(--sl-accent);margin:16px 0 14px}
+.kpi-l{font-size:calc(19px * var(--dk-fs,1));color:var(--sl-muted);line-height:1.35}
+
+/* Ảnh một bên, ý bên kia. `left`/`right` chỉ đổi TỈ LỆ CỘT — thứ tự DOM đã đúng
+   sẵn nên trình đọc màn hình và bản .pptx không bị đảo. */
+.imgside{display:grid;gap:40px;height:100%;align-items:center}
+.imgside.left{grid-template-columns:460px 1fr}
+.imgside.right{grid-template-columns:1fr 460px}
+.imgside .fig{align-self:center;background:var(--sl-card);border:1px solid var(--sl-border);
+ border-radius:18px;padding:16px;box-shadow:var(--sl-sh-md)}
+.imgside .fig img{width:100%;height:auto;display:block;border-radius:10px;max-height:420px;object-fit:contain}
+
+/* Trích dẫn có tác giả — dùng lại .qmark/.qmsg của `quote`.
+   `.qby` của `quote` là position:absolute (top:560px); lồng vào .qauth thì hai toạ độ
+   CỘNG DỒN và tên tác giả văng ra ngoài slide → phải trả nó về dòng thường. */
+.qauth{position:absolute;left:100px;bottom:96px;right:120px;
+ display:flex;align-items:center;gap:16px}
+.qauth .qby{position:static;top:auto;left:auto;font-size:calc(21px * var(--dk-fs,1));font-weight:700;color:#fff}
+.qav{width:64px;height:64px;border-radius:50%;object-fit:cover;flex-shrink:0;
+ border:2px solid var(--sl-gold)}
+.qrole{font-size:calc(16px * var(--dk-fs,1));color:var(--sl-blue-border);margin-top:2px}
+
+/* Mục lục có mốc: đã qua / đang ở / sắp tới */
+.agenda{display:flex;flex-direction:column;gap:12px;height:100%;justify-content:center}
+.ag-it{display:flex;align-items:center;gap:20px;border-radius:14px;padding:12px 20px;
+ border:1px solid var(--sl-border);background:var(--sl-card);box-shadow:var(--sl-sh-sm)}
+.ag-n{width:38px;height:38px;border-radius:50%;flex-shrink:0;display:flex;align-items:center;
+ justify-content:center;font-weight:800;font-size:calc(16px * var(--dk-fs,1));background:var(--sl-bg2);color:var(--sl-muted)}
+.ag-t{font-size:calc(21px * var(--dk-fs,1));color:var(--sl-ink);line-height:1.3}
+.ag-it.done{opacity:.5}
+.ag-it.done .ag-n{background:var(--sl-green);color:#fff}
+/* Mục ĐANG ở: viền đậm + nền nhấn để nhìn phát thấy ngay đang dạy tới đâu */
+.ag-it.now{border-color:var(--sl-gold);border-width:2px;background:var(--sl-bg2);
+ box-shadow:0 4px 16px rgba(0,0,0,.08)}
+.ag-it.now .ag-n{background:var(--sl-gold);color:var(--sl-navy)}
+.ag-it.now .ag-t{font-weight:700}
+
+/* So sánh 3 cột: tiêu đề là dải màu đặc (khác `three` chỉ có vạch mảnh) */
+.c3row{display:grid;gap:22px;height:100%;align-items:stretch;padding:8px 0}
+.c3{display:flex;flex-direction:column;border-radius:16px;overflow:hidden;
+ border:1px solid var(--sl-border);background:var(--sl-card);box-shadow:var(--sl-sh-md)}
+.c3-h{padding:14px 18px;color:#fff;font-weight:800;font-size:calc(21px * var(--dk-fs,1));line-height:1.25;
+ overflow-wrap:anywhere}
+.c3-b{flex:1;padding:16px 18px}
+.c3-b ul.bul li{font-size:calc(19px * var(--dk-fs,1));margin:9px 0}
+
+/* Khung trắng: vùng nội dung có viền đứt cho GV biết chỗ tự dựng */
+.blankbody{border:2px dashed var(--sl-border);border-radius:16px;padding:24px}
+
+/* ══ Chống TRÀN khi nội dung quá dài (mức "over") ═════════════════════════
+   Các con số/nhãn cỡ lớn được đặt cứng theo px nên gặp chữ dài là vỡ khung.
+   Dùng `clamp()` theo chiều rộng ô + cắt số dòng, thay vì để tràn ra ngoài. */
+
+/* Số lớn / chỉ số: co theo bề ngang ô, tối đa 3 dòng */
+.bnv{font-size:calc((clamp(34px,7vw,98px)) * var(--dk-fs,1));overflow-wrap:anywhere;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.bnl,.kpi-l,.metric .lab{overflow-wrap:anywhere;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.kpi-v{font-size:calc((clamp(28px,5vw,64px)) * var(--dk-fs,1));
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:3;overflow:hidden}
+.metric .val{font-size:calc((clamp(28px,4.6vw,58px)) * var(--dk-fs,1));overflow-wrap:anywhere;
+ display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+.bn,.kpi,.metric{overflow:hidden}
+
+/* Cột (three/compare/compare3/quadrant/feature) và các danh sách trong cột:
+   ô cột tự cuộn-ẩn phần thừa thay vì đẩy chữ xuống dưới chân trang. */
+.cols .col,.c3,.c3-b{overflow:hidden}
+.cols .col ul.bul,.c3-b ul.bul{overflow:hidden}
+
+/* `.dtbl` CŨNG không được `display:block` — xem ghi chú ở khối .cmptbl phía dưới.
+   Trước đây dòng này đặt `display:block`, giết `table-layout:fixed` ở khai báo gốc: đo thật
+   3 cột ra 112/468/147px thay vì ~362 đều nhau. Nặng hơn `.cmptbl` vì `table` là bố cục
+   KHÔNG cho chọn tay ⇒ giáo viên không thoát được. Phần cắt đã có `.body` lo. */
+
+/* Mục lục có mốc / các bước / điểm nhấn: nhiều mục thì thu gọn dòng */
+.agenda,.toc{overflow:hidden}
+.agenda .ag-t,.toc .t{display:-webkit-box;-webkit-box-orient:vertical;-webkit-line-clamp:2;overflow:hidden}
+
+/* ── Chống tràn: một luật chung thay vì vá theo từng tên class ──────────────
+   Mọi vùng nội dung của slide đều nằm trong `.body` (đã `overflow:hidden`). Vấn đề còn lại
+   là các LỚP GIỮA cao hơn khung cha nên đẩy chữ xuống dưới chân trang trước khi bị cắt.
+   Cho tất cả chúng `min-height:0` + `overflow:hidden` — trong flex/grid, mặc định
+   `min-height:auto` KHÔNG cho con co lại, đó chính là lý do chữ tràn ra ngoài. */
+.body>*,.body>*>*{min-height:0}
+.cols,.grid,.mrow,.kpirow,.c3row,.quad,.steps,.spot,.agenda,.toc,.gal,.two,.imgside{
+ max-height:100%;overflow:hidden}
+/* Ô con của các lưới trên: tự cắt phần thừa, không đẩy ra ngoài */
+.col,.qd,.c3,.kpi,.metric,.gcell,.spot-body,.stp{min-height:0;overflow:hidden}
+/* Danh sách nằm TRONG ô: `data-nb` đếm ý của cả slide nên bậc thu nhỏ không với tới đây */
+.col ul.bul,.qd ul.bul,.c3-b ul.bul,.spot-body ul.bul{min-height:0;overflow:hidden}
+.col ul.bul li,.qd ul.bul li,.c3-b ul.bul li{font-size:calc(19px * var(--dk-fs,1));margin:8px 0}
+/* Cột nhiều ý thì thu nhỏ thêm — nếu không, ý cuối bị CẮT NGANG CHỮ (xấu, khó đọc).
+   `data-nb` là tổng ý của slide; với bố cục cột, ý được chia đều nên vẫn suy ra được độ dày. */
+.slide[data-nb="6"] .col ul.bul li,.slide[data-nb="6"] .qd ul.bul li,.slide[data-nb="6"] .c3-b ul.bul li{font-size:calc(17px * var(--dk-fs,1));margin:6px 0}
+.slide[data-nb="7"] .col ul.bul li,.slide[data-nb="7"] .qd ul.bul li,.slide[data-nb="7"] .c3-b ul.bul li{font-size:calc(16px * var(--dk-fs,1));margin:5px 0}
+.slide[data-nb="8"] .col ul.bul li,.slide[data-nb="8"] .qd ul.bul li,.slide[data-nb="8"] .c3-b ul.bul li{font-size:calc(15px * var(--dk-fs,1));margin:4px 0}
+.slide[data-nb="9"] .col ul.bul li,.slide[data-nb="10"] .col ul.bul li,
+.slide[data-nb="11"] .col ul.bul li,.slide[data-nb="12"] .col ul.bul li,
+.slide[data-nb="9"] .qd ul.bul li,.slide[data-nb="10"] .qd ul.bul li,
+.slide[data-nb="9"] .c3-b ul.bul li,.slide[data-nb="10"] .c3-b ul.bul li{font-size:calc(14px * var(--dk-fs,1));margin:3px 0}
+/* Tiêu đề cột cũng phải nhường chỗ khi ý nhiều */
+.slide[data-nb="7"] .col .ch,.slide[data-nb="8"] .col .ch,.slide[data-nb="9"] .col .ch{font-size:calc(18px * var(--dk-fs,1));margin:6px 0 8px}
+.slide[data-nb="7"] .col .cn,.slide[data-nb="8"] .col .cn,.slide[data-nb="9"] .col .cn{font-size:calc(24px * var(--dk-fs,1))}
+/* Ý bị cắt dở dang thì thà cắt TRỌN DÒNG còn hơn cắt ngang chữ */
+.col ul.bul li,.qd ul.bul li,.c3-b ul.bul li{display:-webkit-box;-webkit-box-orient:vertical;
+ -webkit-line-clamp:3;overflow:hidden}
+/* quadrant / spotlight / comparetable: 3 chỗ cuối còn tràn ở mức "over".
+   Cùng một cách chữa: cho khung con co được (min-height:0) rồi cắt phần thừa. */
+.quad{display:grid;height:100%;min-height:0;overflow:hidden}
+.qd{min-height:0;overflow:hidden;display:flex;flex-direction:column}
+.qd ul.bul{min-height:0;overflow:hidden}
+.spot-body{min-height:0;overflow:hidden;flex:1 1 auto}
+.spot-body ul.bul{min-height:0;overflow:hidden}
+.slide[data-nb="7"] .spot-body ul.bul li,.slide[data-nb="8"] .spot-body ul.bul li{font-size:calc(19px * var(--dk-fs,1));margin:7px 0}
+/* Bảng so sánh — KHAI BÁO DUY NHẤT (trước kia 4 chỗ khai mâu thuẫn nhau).
+   TUYỆT ĐỐI không thêm `display:block`: `table-layout:fixed` CHỈ có tác dụng trên
+   display:table, nên block làm chết luôn việc chia cột đều. Đã đo thật: một ô dài
+   khiến 2 cột thành 1009px / 142px thay vì 576/576 — hai cột "so sánh" hết so sánh
+   được, tiêu đề cột hẹp còn bị ngắt giữa chừng.
+   Cắt phần thừa đã có `.body` (absolute, overflow ẩn) lo; <table> không nhận
+   max-height nên đừng cố ép ở đây. Giữ <table> thật để .pptx trích đúng ô. */
+.cmptbl{table-layout:fixed;width:100%;border-collapse:collapse}
+.cmptbl td,.cmptbl th{overflow-wrap:anywhere;vertical-align:top}
+.slide[data-nb="7"] .cmptbl,.slide[data-nb="8"] .cmptbl,
+.slide[data-nb="9"] .cmptbl,.slide[data-nb="10"] .cmptbl{font-size:calc(16px * var(--dk-fs,1))}
+.slide[data-nb="7"] .cmptbl td,.slide[data-nb="8"] .cmptbl td{padding:6px 12px}
+
+/* ══ Bố cục đợt 3 — theo nhu cầu THẬT của bài Toán ═══════════════════════════ */
+
+/* Bảng RỘNG (bảng biến thiên): trải hết bề ngang, cột đều nhau.
+   `h_table` để `table-layout:fixed` + width auto nên bảng 10 cột co dúm ở góc trái,
+   chừa 2/3 slide trống — chiếu xa gần như không đọc được. */
+/* `.body` cao hết phần thân slide, nên khối con phải TỰ CĂN GIỮA — không thì bảng/thẻ
+   dính mép trên, chừa 40% slide trống (đã thấy trên ảnh chụp bảng biến thiên 6 cột). */
+.body.twwrap,.body.fswrap{display:flex;flex-direction:column;justify-content:center}
+.twtbl{width:100%;border-collapse:collapse;table-layout:fixed;
+ font-size:calc((clamp(13px,calc(150px / var(--tw-n, 6)),26px)) * var(--dk-fs,1))}
+.twtbl th,.twtbl td{border:1px solid var(--sl-border);padding:10px 6px;text-align:center;
+ color:var(--sl-ink);vertical-align:middle;overflow-wrap:anywhere;line-height:1.35}
+.twtbl th{background:var(--sl-navy);color:#fff;font-weight:800}
+/* Cột đầu là NHÃN HÀNG (x · y′ · y) — tô nền cho mắt bám được khi đọc ngang */
+.twtbl .tw-h{background:var(--sl-bg2);font-weight:800;color:var(--sl-navy);text-align:right;
+ padding-right:12px;width:var(--tw-lab,84px)}
+.twtbl tr:nth-child(even) td:not(.tw-h){background:var(--sl-bg2)}
+.tw-cap{margin-top:14px;font-size:calc(15px * var(--dk-fs,1));color:var(--sl-muted);text-align:center;font-style:italic}
+
+/* Thẻ định nghĩa — chữ dài trình bày thành đoạn văn có khung, cỡ tự co theo độ dài. */
+.defcard{background:var(--sl-card);border:1px solid var(--sl-border);
+ border-left:6px solid var(--sl-navy);border-radius:14px;padding:26px 30px;height:100%;
+ overflow:hidden;display:flex;flex-direction:column;gap:14px;justify-content:center;box-shadow:var(--sl-sh-lg)}
+.dc-p{color:var(--sl-ink);line-height:1.55;overflow-wrap:anywhere}
+.defcard[data-sz="l"] .dc-p{font-size:calc(26px * var(--dk-fs,1))}
+.defcard[data-sz="m"] .dc-p{font-size:calc(21px * var(--dk-fs,1));line-height:1.5}
+.defcard[data-sz="s"] .dc-p{font-size:calc(17px * var(--dk-fs,1));line-height:1.45}
+.dc-src{margin-top:auto;padding-top:12px;border-top:1px solid var(--sl-border);
+ font-size:calc(14px * var(--dk-fs,1));color:var(--sl-muted);font-style:italic}
+
+/* Công thức + các bước biến đổi */
+.fsbox{background:var(--sl-card);border:1px solid var(--sl-border);border-radius:14px;
+ padding:18px 22px;text-align:center;margin-bottom:16px;box-shadow:var(--sl-sh-sm)}
+.fsbox img{max-width:80%;max-height:110px}
+.fs-eq{font-size:calc(30px * var(--dk-fs,1));font-weight:800;color:var(--sl-navy);line-height:1.3;overflow-wrap:anywhere}
+.fsteps{list-style:none;display:flex;flex-direction:column;gap:10px;overflow:hidden}
+.fsteps li{display:flex;align-items:flex-start;gap:14px}
+.fs-n{flex:none;width:26px;height:26px;border-radius:50%;background:var(--sl-blue);color:#fff;
+ display:flex;align-items:center;justify-content:center;font-size:calc(14px * var(--dk-fs,1));font-weight:800;margin-top:2px}
+.fs-t{font-size:calc(20px * var(--dk-fs,1));line-height:1.4;color:var(--sl-ink);overflow-wrap:anywhere}

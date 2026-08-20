@@ -1,0 +1,11 @@
+// Người dùng đặt `"moduleResolution": "nodenext"` — kiểu chuẩn mới. Khác `bundler` ở chỗ nó
+// PHÂN BIỆT ESM/CJS: `types` phẳng trong `exports` là không đủ, phải lồng `types` vào TỪNG
+// nhánh `import`/`require` thì consumer CommonJS mới hết `TS1479`.
+{
+  "compilerOptions": {
+    "target": "ES2022", "module": "NodeNext", "moduleResolution": "nodenext",
+    "strict": true, "skipLibCheck": true, "noEmit": true, "types": []
+  },
+  "angularCompilerOptions": { "strictTemplates": true },
+  "files": ["src/app.ts"]
+}

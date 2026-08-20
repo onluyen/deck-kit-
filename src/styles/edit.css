@@ -1,0 +1,247 @@
+/* `absolute` chứ KHÔNG `fixed`: bản cũ luôn nằm trong iframe nên "cửa sổ" chính là khung
+   deck. Mount thẳng vào panel của app thì `fixed` khiến rail/console/thanh trạng thái bám
+   MÀN HÌNH — đè lên menu app và tràn ra ngoài panel. Phần tử chứa đã `position:relative`
+   (mountDeck đặt), nên `absolute` neo đúng vào khung deck. */
+
+[contenteditable]{outline:1px dashed rgba(38,132,252,.55);outline-offset:3px;border-radius:3px;cursor:text}
+[contenteditable]:hover{background:rgba(38,132,252,.05)}
+[contenteditable]:focus{outline:2px solid var(--sl-blue);background:rgba(38,132,252,.08)}
+ul.bul li{list-style:none}
+.edx{margin-left:10px;background:transparent;border:0;color:#c0392b;font-size:20px;line-height:1;cursor:pointer;opacity:.45;vertical-align:middle}
+.edx:hover{opacity:1}
+.edadd{margin-top:10px;background:transparent;border:1px dashed var(--sl-blue-border);color:var(--sl-blue);border-radius:8px;padding:4px 14px;font-size:15px;cursor:pointer;font-weight:700}
+.edadd:hover{background:rgba(38,132,252,.08)}
+
+/* Thumbnail rail trái (kéo-thả sắp xếp, nhân bản, xoá) + console phải.
+   `.lp-edit` nằm trên <body> ở bản Python, trên phần tử host ở bản thư viện — bắt cả hai. */
+
+/* nút mở bộ chọn bố cục + popup picker trực quan */
+
+/* z-index 200: picker gắn thẳng vào <body> nên nó nằm ở NGỮ CẢNH XẾP CHỒNG GỐC, phải so
+   với các lớp phủ của app chủ chứ không phải với `.dk-toolbar` (z-30) bên trong deck. App
+   lesson-plan có MediaPicker z-100, PreviewModal z-120, JsonModal z-130 — để 40 thì mở picker
+   bố cục trong lúc một trong ba lớp đó đang mở là picker CHUI XUỐNG DƯỚI: thấy mờ mờ mà bấm
+   không được. 200 để còn chỗ trống phía dưới cho lớp mới của app chủ. */
+#lp-picker{position:fixed;inset:0;z-index:200;background:rgba(10,12,18,.55);display:none;align-items:center;justify-content:center}
+#lp-picker.show{display:flex}
+.pk-box{background:#fff;border-radius:18px;width:min(760px,92vw);max-height:86vh;display:flex;flex-direction:column;box-shadow:0 30px 80px rgba(0,0,0,.5);overflow:hidden}
+.pk-hd{display:flex;align-items:center;justify-content:space-between;padding:16px 22px;border-bottom:1px solid #e6e9f0;font-weight:800;font-size:16px;color:#1C274C}
+.pk-x{background:transparent;border:0;font-size:19px;cursor:pointer;color:#6b7280;line-height:1}
+.pk-body{padding:8px 22px 22px;overflow-y:auto}
+.pk-g{font-size:11.5px;font-weight:800;text-transform:uppercase;letter-spacing:.05em;color:#9aa6c0;margin:16px 0 9px}
+.pk-grid{display:grid;grid-template-columns:repeat(4,1fr);gap:10px}
+.pk-tile{display:flex;flex-direction:column;align-items:center;gap:7px;padding:15px 8px;border:2px solid #e6e9f0;border-radius:12px;background:#fff;cursor:pointer;transition:border-color .12s,background .12s}
+.pk-tile:hover{border-color:#8FA9E8;background:#f6f8fc}
+.pk-tile.on{border-color:#2B4182;background:#eef3fd}
+.pk-lb{font-size:12px;font-weight:600;color:#1C274C;text-align:center;line-height:1.2}
+.pk-tile.off{opacity:.4;cursor:not-allowed;background:#f7f8fb;position:relative}
+.pk-tile.off:hover{border-color:#e6e9f0;background:#f7f8fb}
+.pk-lock{position:absolute;top:6px;right:8px;font-size:12px}
+/* mini-preview sơ đồ bố cục trong tile */
+/* Ô xem trước = slide THẬT 1280x720 thu nhỏ. Trước đây là sơ đồ vẽ tay (.mp-*): 38 case
+   cho 41 bố cục, 3 bố cục rơi vào icon chung, và không cái nào giống thứ bấm xong sẽ
+   nhận. Giờ nhúng đúng đầu ra của `renderSlide`. Tỉ lệ 76/1280 = .0594 */
+.pk-mini{width:76px;height:46px;border-radius:6px;background:#f3f5fa;border:1px solid #e0e5f0;overflow:hidden;flex:none;display:block;position:relative}
+.pk-mini>.slide{width:1280px;height:720px;position:absolute;left:0;top:0;transform:scale(.0594);transform-origin:0 0;pointer-events:none;margin:0;border-radius:0}
+/* Thumbnail rail trái */
+/* Preview trái — bắt đầu DƯỚI thanh công cụ (`top:0` thì bị thanh che mất thumbnail đầu). */
+#lp-rail{position:absolute;left:0;top:var(--dk-h-bar,52px);bottom:0;width:150px;z-index:28;
+ background:var(--dk-bg);border-right:1px solid var(--dk-border);
+ overflow-y:auto;overflow-x:hidden;padding:var(--dk-2) var(--dk-2) 40px;
+ display:flex;flex-direction:column;gap:var(--dk-2);scrollbar-width:thin}
+#lp-rail::-webkit-scrollbar{width:7px}#lp-rail::-webkit-scrollbar-thumb{background:rgba(255,255,255,.2);border-radius:4px}
+.rail-it{position:relative;border-radius:9px;cursor:grab;border:2px solid transparent;background:#0c0e14}
+.rail-it.on{border-color:var(--sl-gold)}
+.rail-it.drag{opacity:.4}
+.rail-thumb{position:relative;width:150px;height:85px;overflow:hidden;border-radius:7px;background:var(--sl-bg2);pointer-events:none}
+.rail-thumb>.slide{position:absolute;top:0;left:0;display:block!important;width:1280px;height:720px;
+ transform:scale(.1172);transform-origin:top left;background:var(--sl-bg);color:var(--sl-ink);overflow:hidden;box-shadow:none;border-radius:0;animation:none}
+.rail-num{position:absolute;left:5px;top:4px;background:rgba(0,0,0,.66);color:#fff;font-size:11px;font-weight:800;padding:1px 7px;border-radius:9px;line-height:1.5}
+.rail-del,.rail-dup{position:absolute;top:4px;width:22px;height:22px;border-radius:6px;border:0;color:#fff;font-size:12px;cursor:pointer;opacity:0;transition:opacity .12s;display:flex;align-items:center;justify-content:center;padding:0;line-height:1}
+.rail-del{right:5px;background:rgba(192,57,43,.94)}
+.rail-dup{right:31px;background:rgba(38,132,252,.94)}
+.rail-it:hover .rail-del,.rail-it:hover .rail-dup{opacity:1}
+.rail-it.skip{opacity:.5}
+.rail-it.skip .rail-thumb{filter:grayscale(1)}
+.rail-it.skip .rail-num::after{content:" ·ẨN";color:#ff8a80}
+/* slide ẩn (skip) — edit mode hiện mờ */
+#scaler>.slide.active.skipped{opacity:.45}
+/* Trình chiếu (present): ẩn mọi công cụ, slide toàn khung */
+.lp-present #lp-rail,.lp-present .dk-toolbar,.lp-present .dk-pop{display:none!important}
+.lp-present .stage{left:0!important;right:0!important}
+
+/* ══ Làm đẹp trình sửa (P0.4) ═══════════════════════════════════════════════ */
+
+/* Ô tìm bố cục trong picker — 38 bố cục thì cuộn tay quá chậm */
+.pk-q{flex:1;margin:0 14px;min-width:0;font-family:inherit;font-size:14px;padding:8px 12px;
+ border:1px solid #d8dee9;border-radius:9px;background:#f7f9fc;color:#1C274C;outline:none}
+.pk-q:focus{border-color:var(--sl-blue,#2684fc);background:#fff;
+ box-shadow:0 0 0 3px rgba(38,132,252,.14)}
+.pk-q::placeholder{color:#9aa6c0}
+.pk-none{padding:34px 22px;text-align:center;color:#8894ab;font-size:14px}
+/* `.pk-tile{display:flex}` ĐÈ thuộc tính `hidden` (display mặc định của hidden chỉ là
+   `display:none` ở tầng user-agent) → lọc xong ô vẫn hiện. Phải chặn tường minh. */
+.pk-tile[hidden],.pk-grid[hidden],.pk-g[hidden],.pk-none[hidden]{display:none!important}
+/* Tiêu đề nhóm DÍNH khi cuộn — cuộn giữa danh sách dài vẫn biết đang ở nhóm nào */
+.pk-g{position:sticky;top:0;z-index:2;background:#fff}
+/* Ô đang rê chuột: nổi lên để biết mình đang xem trước bố cục nào */
+.pk-tile:not([disabled]):hover{border-color:var(--sl-blue,#2684fc);
+ box-shadow:0 6px 18px rgba(38,132,252,.18);transform:translateY(-1px)}
+.pk-tile{transition:transform .12s,box-shadow .12s,border-color .12s}
+/* Slide đang được XEM TRƯỚC (rê chuột ở picker) — viền nhấn cho biết chưa chốt */
+
+/* Console phải: chia nhóm có tiêu đề, nút nguy hiểm tách xuống cuối */
+
+ text-transform:uppercase;color:#6c7893;padding-bottom:6px;border-bottom:1px solid rgba(255,255,255,.07)}
+
+/* Dấu thời gian lưu — thay cho chữ nhấp nháy không rõ đã lưu lúc nào */
+
+/* LƯU HỎNG phải NỔI BẬT: giáo viên bỏ lỡ dòng này là gõ tiếp rồi mất trắng công. */
+
+
+/* Tôn trọng người dùng tắt hiệu ứng chuyển động */
+@media (prefers-reduced-motion:reduce){
+  .pk-tile,.rail-it,.rail-del,.rail-dup{transition:none}
+  #scaler>.slide.active{animation:none}
+}
+
+/* Ô bố cục ĐỔI ĐƯỢC nhưng chữ hơi dài — cảnh báo VÀNG, khác hẳn ô khoá (mờ + 🔒).
+   Vẫn bấm được: GV có thể định rút gọn chữ ngay sau khi đổi. */
+.pk-tile.tight{border-color:#e8b339;background:#fffdf5}
+.pk-tile.tight:hover{border-color:#d99b1f;background:#fff9e8}
+.pk-tight{position:absolute;top:6px;right:8px;font-size:9.5px;font-weight:800;
+ background:#e8b339;color:#4a3608;padding:1px 5px;border-radius:5px;line-height:1.5}
+.pk-tile{position:relative}
+
+/* ══ Thanh công cụ TRÊN + preview TRÁI (thay 3 cột cũ) ═════════════════════
+   Slide rộng 682px thay vì 406px trên cùng một panel — gấp 1,7 lần. */
+.lp-edit .stage{left:150px;right:0;top:var(--dk-h-bar,52px)}
+.dk-toolbar{position:absolute;left:0;right:0;top:0;height:var(--dk-h-bar,52px);z-index:30;
+ display:flex;align-items:center;gap:var(--dk-3);padding:0 var(--dk-3);
+ background:var(--dk-bg);border-bottom:1px solid var(--dk-border);
+ font-family:var(--dk-font);color:var(--dk-fg);font-size:13px;
+ overflow-x:auto;overflow-y:visible;scrollbar-width:thin}
+/* Nhóm nút, ngăn bằng vạch dọc — mắt phân biệt được "lưu" / "thuộc tính" / "thao tác" */
+.dk-grp{display:flex;align-items:center;gap:var(--dk-1);flex:none;
+ padding-right:var(--dk-3);border-right:1px solid var(--dk-border)}
+.dk-grp:last-child{border-right:0;padding-right:0}
+.dk-grp.dk-right{margin-left:auto}
+
+.dk-btn{display:inline-flex;align-items:center;gap:6px;height:var(--dk-h-sm);
+ padding:0 10px;border:1px solid transparent;border-radius:var(--dk-r);
+ background:transparent;color:var(--dk-fg);font:inherit;font-weight:600;cursor:pointer;
+ white-space:nowrap;transition:background .12s,border-color .12s}
+/* Nút định dạng chữ: nhãn là CHỮ (B/I/x²/x₂) chứ không phải icon — quy ước ai cũng đọc được.
+   Cỡ cố định cho 4 nút bằng nhau, chữ ở giữa. */
+.dk-fmt{min-width:34px;justify-content:center;font-family:Georgia,"Times New Roman",serif;font-size:15px}
+.dk-fmt b{font-weight:800}
+.dk-fmt i{font-style:italic}
+/* Đẩy sup/sub xa hơn mặc định: ở cỡ nút nhỏ, `vertical-align:super|sub` gốc lệch quá ít
+   nên hai nút x² và x₂ nhìn GIỐNG HỆT nhau (đã thấy trên ảnh chụp). */
+/* Dịch sup/sub bằng `position:relative` + `top` — `vertical-align` gốc lệch quá ít nên trong
+   nút nhỏ (flex, căn giữa) hai nút x² và x₂ nhìn GIỐNG HỆT nhau. Đã kiểm bằng ảnh chụp. */
+.dk-fmt sup,.dk-fmt sub{font-size:11px;font-weight:700;position:relative;vertical-align:baseline}
+.dk-fmt sup{top:-5px}
+.dk-fmt sub{top:4px}
+/* Ô màu tự do dưới 7 swatch gợi ý */
+.dk-pick{display:flex;align-items:center;gap:8px;margin-top:8px;padding-top:8px;
+ border-top:1px solid var(--dk-border);font-size:12.5px;color:var(--dk-fg-2);cursor:pointer}
+.dk-pick input[type=color]{width:30px;height:24px;padding:0;border:1px solid var(--dk-border);
+ border-radius:6px;background:none;cursor:pointer}
+.dk-btn:hover{background:var(--dk-bg-3)}
+.dk-btn:focus-visible{outline:none;box-shadow:var(--dk-ring)}
+.dk-btn[disabled]{opacity:.4;cursor:not-allowed}
+.dk-btn.primary{background:var(--dk-accent);color:var(--dk-accent-fg);border-color:transparent}
+.dk-btn.primary:hover{filter:brightness(1.06)}
+.dk-btn.danger{color:var(--dk-danger)}
+.dk-btn.danger:hover{background:var(--dk-danger-bg)}
+.dk-btn.danger-ghost{color:var(--dk-fg-2)}
+.dk-btn.ghost{color:var(--dk-fg-2);padding:0 8px}
+.dk-caret{opacity:.5;margin-left:-2px}
+.dk-lb{line-height:1}
+/* Panel hẹp: giấu chữ, giữ icon. Dùng CONTAINER QUERY chứ không `@media` — media đo
+   CỬA SỔ, mà deck nằm trong panel hẹp giữa màn hình rộng thì đo cửa sổ là sai hẳn
+   (màn 1920 nhưng panel chỉ 730px vẫn phải rút gọn). */
+.dk-toolbar{container-type:inline-size;container-name:dktb}
+/* Vừa: đủ chỗ cho mọi nhãn */
+@container dktb (max-width:980px){
+  /* Nhãn của nhóm THAO TÁC rút trước — icon các nút này (＋ ⧉ 👁 🗑) đã đủ rõ nghĩa,
+     trong khi "Bố cục"/"Màu"/"Ghi chú" mất chữ là khó đoán hơn nhiều. */
+  #dk-add .dk-lb,#dk-dup .dk-lb,#dk-skip .dk-lb,#dk-del .dk-lb,#dk-present .dk-lb{display:none}
+}
+@container dktb (max-width:720px){
+  .dk-btn .dk-lb{display:none}
+  .dk-btn#dk-layout .dk-lb{display:inline}   /* trừ tên bố cục: đó là THÔNG TIN, không phải nhãn nút */
+  .dk-pos{display:none}
+}
+/* Trình duyệt chưa có container query → lùi về đo cửa sổ (vẫn hơn không có gì) */
+@supports not (container-type: inline-size){
+  @media (max-width:900px){ .dk-btn .dk-lb{display:none} .dk-btn#dk-layout .dk-lb{display:inline} }
+}
+
+.dk-status{font-size:12px;color:var(--dk-fg-2);white-space:nowrap;padding-left:var(--dk-2)}
+.dk-status.ed-saved{color:var(--dk-ok);font-weight:700}
+.dk-status.ed-dirty{color:var(--dk-warn)}
+.dk-status.ed-error{color:#fff;font-weight:800;background:#c0392b;padding:3px 10px;border-radius:var(--dk-r-sm)}
+.dk-pos{font-size:12px;color:var(--dk-fg-2);font-variant-numeric:tabular-nums;padding:0 var(--dk-2)}
+.dk-pos-sep{opacity:.45;margin:0 2px}
+
+/* Popover — CSS thuần, không Radix (giữ tính độc lập cho Angular) */
+.dk-pop{position:absolute;z-index:40;min-width:210px;max-width:min(360px,90vw);
+ background:var(--dk-bg-2);border:1px solid var(--dk-border-2);border-radius:var(--dk-r-md);
+ box-shadow:var(--dk-shadow-lg);padding:var(--dk-3);display:flex;flex-direction:column;gap:var(--dk-2)}
+.dk-pop-t{font-size:11px;font-weight:800;letter-spacing:.06em;text-transform:uppercase;color:var(--dk-fg-3)}
+.dk-pop-hint{font-size:11.5px;color:var(--dk-fg-2);line-height:1.45}
+.dk-sw{display:flex;flex-wrap:wrap;gap:var(--dk-2)}
+.dk-swatch{width:28px;height:28px;border-radius:var(--dk-r-sm);border:2px solid transparent;
+ cursor:pointer;padding:0;box-shadow:0 2px 6px rgba(0,0,0,.35)}
+.dk-swatch.on{border-color:#fff;box-shadow:0 0 0 2px var(--dk-accent)}
+.dk-swatch.reset{background:var(--dk-bg-3);color:var(--dk-fg-2);display:flex;
+ align-items:center;justify-content:center;font-size:13px}
+.dk-ta{width:100%;background:var(--dk-bg);color:var(--dk-fg);border:1px solid var(--dk-border-2);
+ border-radius:var(--dk-r);padding:8px 10px;font:inherit;font-size:12.5px;line-height:1.5;resize:vertical}
+.dk-ta:focus{outline:none;border-color:var(--dk-accent);box-shadow:var(--dk-ring)}
+.dk-w{width:100%;justify-content:center}
+
+/* `flex:none` — thiếu là flex-column ÉP thumbnail co lại rồi tràn khỏi màn hình
+   (đã gặp thật: thumbnail thứ 10 lòi ra ngoài, không cuộn tới được). */
+.rail-it{flex:none;aspect-ratio:16/9}
+.rail-thumb{width:100%;height:100%}
+.rail-dup,.rail-del{display:flex;align-items:center;justify-content:center;font-size:11px}
+
+/* Vùng slide phải TRỪ đúng chiều cao thanh công cụ, không thì slide lệch xuống dưới
+   (thanh chiếm 52px mà `.stage` vẫn tính từ đỉnh). */
+.lp-edit .stage{top:var(--dk-h-bar,52px);height:auto;bottom:0}
+/* Thanh điều hướng cũ (‹ › ⛶) trùng chức năng với thumbnail + thanh công cụ → ẩn khi SỬA,
+   giữ nguyên khi chỉ XEM. */
+.lp-edit .nav,.lp-edit #sprog{display:none}
+/* Thanh công cụ hẹp: cho cuộn ngang và giữ nhóm cuối luôn thấy được */
+.dk-toolbar{scroll-padding-right:var(--dk-3)}
+.dk-toolbar::-webkit-scrollbar{height:6px}
+.dk-toolbar::-webkit-scrollbar-thumb{background:var(--dk-border-2);border-radius:3px}
+
+/* Phải đặt SAU luật `.dk-toolbar` — cùng độ ưu tiên thì luật đứng sau thắng, để trước
+   là nền cảnh báo không bao giờ hiện (đã vấp: test đỏ mà mắt thường không nhận ra). */
+.dk-toolbar:has(.ed-error){background:var(--dk-danger-bg);border-bottom-color:#7a3030}
+
+/* Tiêu đề nhóm trong rail — suy từ slide `section`/`hero` (mốc mở đầu mỗi tiết).
+   Dính trên đầu khi cuộn: bài 156 slide thì phải luôn biết đang ở tiết nào. */
+.rail-g{position:sticky;top:-4px;z-index:2;font-size:10.5px;font-weight:800;letter-spacing:.04em;
+  text-transform:uppercase;color:#9aa6c0;background:var(--dk-bg);padding:7px 4px 5px;
+  border-bottom:1px solid var(--dk-border);margin:6px 0 0;
+  overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+.rail-g:first-child{margin-top:0}
+.rail-it[hidden],.rail-g[hidden]{display:none}
+/* Tuỳ chọn trong popover lọc */
+.dk-fopt{display:block;width:100%;text-align:left;background:none;border:0;border-radius:7px;
+  padding:7px 9px;cursor:pointer;color:inherit}
+.dk-fopt:hover{background:var(--dk-hover,rgba(255,255,255,.07))}
+.dk-fopt.on{background:var(--dk-accent);color:#111}
+.dk-fopt b{display:block;font-size:12.5px;font-weight:700}
+.dk-fopt span{display:block;font-size:11px;opacity:.7}
+.dk-btn.on{background:var(--dk-accent);color:#111}
+/* Cảnh báo tương phản trong popover màu — CẢNH BÁO, không chặn: màu nhấn có lúc chỉ để
+   trang trí, chặn là phủ nhận phán đoán của giáo viên. */
+.dk-warn{margin-top:8px;padding:7px 9px;border-radius:7px;font-size:11.5px;line-height:1.45;
+  background:#3a2d10;color:#f6d98a;border:1px solid #6b5320}
+.dk-warn[hidden]{display:none}
